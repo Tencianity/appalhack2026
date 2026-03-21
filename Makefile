@@ -10,7 +10,7 @@ CFLAGS = -Wall -Werror -I $(INC)
 render: main.c
 	$(CC) $(CFLAGS) $@ -o $<
 
-main.c: $(SRCS)
+$(SRC)/main.c: $(SRCS)
 	$(CC) $(CFLAGS) $@ -o $< 
 
 clean:
