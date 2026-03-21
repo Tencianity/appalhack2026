@@ -18,5 +18,7 @@ RGBA colorRay(Ray ray, Scene* scene);
 int hitScene(Scene* scene, Ray ray, float tMin, 
         float tMax, HitRec* rec);
 
+int hitShadow(Scene* scene, HitRec* rec, V3 dirNorm, float dirMag);
+
 
 #endif

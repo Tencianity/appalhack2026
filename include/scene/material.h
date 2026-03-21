@@ -4,7 +4,7 @@
 #include "scene/color.h"
 
 typedef struct {
-    RGBA color;
+    V3 color;
     float density;
     float elasticity;
     float ref_index;

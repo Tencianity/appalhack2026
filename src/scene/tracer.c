@@ -29,14 +29,20 @@ void renderScene(Scene* scene) {
     }
 }
 
+
 RGBA colorRay(Ray ray, Scene* scene) {
     HitRec rec;
     if (hitScene(scene, ray, 0.001f, 1000.0f, &rec)) {
-        // To be messed with
-        // float light = rec.normal.y * 0.5f + 0.5f;
-        return rec.mat.color;
+        V3 color = rec.mat.color;
+        for (int i = 0; i < scene->lightCount; i++) {
+            Light* light = scene->lights[i];
+            V3 contribution = light->illuminate(light, scene, &rec);
+            color = v3Add(color, contribution);
+        }
+        color = v3Scale(v3Clamp(color, 0.0f, 1.0f), 255.0f);
+        return (RGBA) {color.x, color.y, color.z, 255};
     }
-    return (RGBA) {0, 0, 0, 1}; // Should be black if not hit
+    return (RGBA) {0, 0, 0, 255}; // Should be black if not hit
 }
 
 
@@ -56,4 +62,12 @@ int hitScene(Scene* scene, Ray ray, float tMin,
         }
     }
     return hasHit;
+}
+
+
+int hitShadow(Scene* scene, HitRec* rec, V3 dirNorm, float dirMag) {
+    V3 orig = v3Add(rec->point, v3Scale(dirNorm, 0.00001f));
+    Ray ray = (Ray){orig, dirNorm};
+    HitRec sRec;
+    return hitScene(scene, ray, 0.001f, dirMag, &sRec);
 }
