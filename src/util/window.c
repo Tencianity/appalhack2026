@@ -131,15 +131,16 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     int sWidth = wWidth;
     int sHeight = wHeight * 9 / 10;
 
-    Scene* scene = (Scene*)malloc(sizeof(Scene));
+    Scene* scene = (Scene*)calloc(1, sizeof(Scene));
     scene->width = sWidth;
     scene->height = sHeight;
     scene->buffer = malloc(sizeof(uint32_t) * sWidth * sHeight);
     scene->cam = createCamera((float) sWidth / sHeight);
+    scene->objCount = 0;
 
     SDL_Rect sceneRect = {
         0, 
-        wHeight,
+        wHeight / 10,
         sWidth, 
         sHeight
     };
@@ -157,7 +158,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     box.scene = scene;
 
     // Here temporarally
-    RGBA sphereColor = {0, 0, 0, 255};
+    RGBA sphereColor = {255, 255, 255, 255};
     Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
     Sphere* sphere = createSphere(
         (V3) {0, 0, -1}, // origin
@@ -240,13 +241,14 @@ int runWindow(int width, int height) {
         
         frameCount++;
         Uint32 currentTime = SDL_GetTicks();
-        float newFps = frameCount * 1000.0f / (currentTime - lastTime);
-        frameCount = 0;
-        lastTime = currentTime;
-        if (newFps != fps) {
-            fps = newFps;
-            updateFpsText(&hudBox, font, newFps);
+
+        if (currentTime - lastTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastTime = currentTime;
+            updateFpsText(&hudBox, font, fps);
         }
+
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox);
     }
