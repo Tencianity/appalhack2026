@@ -7,7 +7,7 @@ SRCS = $(UTIL)/* $(SCN)/*
 CC = g++
 CFLAGS = -Wall -Werror -I $(INC)
 
-render: main.c
+render: $(SRC)/main.c
 	$(CC) $(CFLAGS) $@ -o $<
 
 $(SRC)/main.c: $(SRCS)
