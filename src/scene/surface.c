@@ -12,9 +12,9 @@ Sphere* createSphere(V3 center, float radius, Mat mat) {
     Sphere* s = (Sphere*)malloc(sizeof(Sphere));
     s->base.hit = hitSphere;
     s->base.type = SPHERE_TYPE;
+    s->base.mat = mat;
     s->center = center;
     s->radius = radius;
-    s->mat = mat;
     return s;
 }
 
@@ -41,6 +41,6 @@ int hitSphere(Surface* self, Ray ray, float tMin,
 
     rec->t = root;
     rec->point = rayAt(ray, rec->t);
-    rec->mat = sphere->mat;
+    rec->mat = sphere->base.mat;
     return 1;
 }

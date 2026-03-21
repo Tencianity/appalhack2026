@@ -19,13 +19,13 @@ struct Surface {
         HitRec* rec
     );
     V3 velocity;
+    Mat mat;
 };
 
 typedef struct {
     Surface base;
     V3 center;
     float radius;
-    Mat mat;
 } Sphere;
 
 

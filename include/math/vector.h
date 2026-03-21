@@ -80,6 +80,10 @@ static inline V3 v3Scale(V3 v, float s) {
     return (V3) {v.x * s, v.y * s, v.z * s};
 }
 
+static inline V3 v3InvScale(V3 v, float s) {
+    return (V3) {v.x / s, v.y / s, v.z / s};
+}
+
 static inline V3 v3Reflect(V3 v, V3 n) {
     float d = v3Dot(v, n);
     return v3Sub(v, v3Scale(n, 2.0f * d));

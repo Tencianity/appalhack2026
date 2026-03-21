@@ -2,21 +2,27 @@
 #define LIGHT_H
 
 #include "math/vector.h"
+#include "scene/scene.h"
+#include "scene/surface.h"
+#include "scene/camera.h"
 #include "scene/ray.h"
 #include "scene/hit.h"
+#include "scene/color.h"
 
 #define POINTLIGHT_TYPE 1
 #define AMBIENTLIGHT_TYPE 2
 
-typedef struct {
+typedef struct Light Light;
+struct Light {
     int type;
-    V3 (*illuminate) {
+    RGBA (*illuminate)(
         Light* self,
-        Ray ray,
-        HitRec* rec,
-    };
+        Scene* scene,
+        Surface* surface,
+        HitRec* rec
+    );
     V3 intensity;
-} Light;
+};
 
 typedef struct {
     Light base;
@@ -32,9 +38,11 @@ PointLight createPointLight(V3 intensity, V3 pos);
 
 AmbientLight createAmbientLight(V3 intensity);
 
-V3 pointIlluminate(Light* self, Ray ray, HitRec* rec);
+RGBA pointIlluminate(Light* self, Scene* scene,
+        Surface* surface, HitRec* rec);
 
-V3 ambientIlluminate(Light* self, Ray ray, HitRec* rec);
+RGBA ambientIlluminate(Light* self, Scene* scene,
+        Surface* surface, HitRec* rec);
 
 
 #endif
