@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Delete these includes before make
+#include "surface.h"
+#include "scene.h"
+#include "vector.h"
+
 #define FALSE 0
 #define TRUE 1
 
