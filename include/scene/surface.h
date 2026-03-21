@@ -1,1 +1,0 @@
-void transpose(Scene scene, Surface* sphere);
