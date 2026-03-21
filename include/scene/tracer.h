@@ -1,0 +1,22 @@
+#ifndef TRACER_H
+#define TRACER_H
+
+#include "scene/scene.h"
+#include "scene/camera.h"
+#include "scene/ray.h"
+#include "scene/color.h"
+
+#include <stdint.h>
+
+
+void renderScene(Scene* scene);
+
+Ray castRay(Camera* cam, float a, float b);
+
+RGBA colorRay(Ray ray, Scene* scene);
+
+int hitScene(Scene* scene, Ray ray, float tMin, 
+        float tMax, HitRec* rec);
+
+
+#endif
