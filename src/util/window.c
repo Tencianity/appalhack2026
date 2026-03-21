@@ -3,6 +3,7 @@
 #include "scene/camera.h"
 #include "scene/color.h"
 #include "scene/tracer.h"
+#include "util/ui.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -221,7 +222,6 @@ int runWindow(int width, int height) {
     SDL_Texture* texture = createSceneTexture(window, renderer, width, height);
     if (!texture) return 1;
 
-    printf("Successfully initialized window.\n");
     SDL_Event event;
     
     HudBox hudBox = initHudBox(window, renderer, width, height);
@@ -231,10 +231,18 @@ int runWindow(int width, int height) {
     int running = 1;
     int frameCount = 0;
     float fps = 0;
+    int mouseDown = 0;
+    V3 mousePos;
 
     while (running) {
-        while (SDL_PollEvent(&event))
+        while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
+            if (event.type == SDL_MOUSEBUTTONDOWN) mouseDown = 1;
+            if (event.type == SDL_MOUSEBUTTONUP) mouseDown = 0;
+            if (event.type == SDL_MOUSEMOTION) {
+                mousePos = (V3) {event.motion.x, event.motion.y, 0.f};
+            }
+        }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
@@ -251,6 +259,7 @@ int runWindow(int width, int height) {
 
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox);
+        drawUI(renderer, mouseDown, mousePos);
     }
 
     free(sceneBox.scene->buffer);
