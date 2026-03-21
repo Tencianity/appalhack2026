@@ -1,5 +1,5 @@
-#include <SDL2/SDL2.h>
-#include <vector.h>
+#include <SDL2/SDL.h>
+#include <math/vector.h>
 
 typedef struct {
     SDL_Rect border;

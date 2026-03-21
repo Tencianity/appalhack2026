@@ -1,9 +1,11 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
 
-// Delete these includes before make
-#include "surface.c"
-#include "engine.h"
-#include "vector.h"
+#include "scene/surface.h"
+#include "scene/scene.h"
+#include "math/vector.h"
 
 #define FALSE 0
 #define TRUE 1
@@ -15,15 +17,14 @@
  * @param scene The scene struct
  * @param surface The surface to transpose
  */
-void transpose(Scene* scene, Surface* object) {
+void transpose(Scene* scene, Surface* object, float speed) {
     // Not a surface
     switch(object->type) {
         case (SPHERE_TYPE):
             // Velocity and location of the surface
-            V3 vel = surface->velocity;
-            V3 loc = surface->center;
-            Sphere* sphere = (*Sphere) object;
-            float speed = sphere->speed;
+            V3 vel = object->velocity;
+            Sphere* sphere = (Sphere*) object;
+            V3 loc = sphere->center;
 
             // Bounds of the scene
             int boundY = scene->width;
@@ -63,7 +64,7 @@ void transpose(Scene* scene, Surface* object) {
             // Update surface velocity and increment location
             vel = v3Normalize(vel); // Normalize velocity
             vel = v3Scale(vel, speed); // Scale velocity by speed
-            object->velocity = vel;
-            object->center = v3Add(loc, vel);
+            sphere->base.velocity = vel;
+            sphere->center = v3Add(loc, vel);
     }
 }

@@ -1,15 +1,28 @@
-SRC = ./src
-INC = ./include
-SRCS = $(shell find $(SRC) -name *.c)
+SRC_DIR := src
+INC_DIR := include
+BIN_DIR := bin
 
-CC = gcc
-CFLAGS = -std=c17 -lSDL2 -Wall -I $(INC)
+CC := gcc
+CFLAGS := -Wall -Wextra -g $(shell sdl2-config --cflags) -I $(INC_DIR)
+LIBS := $(shell sdl2-config --libs) -lSDL2_ttf -lm
+EXEC := app_hack
 
-render: $(SRC)/main.c
-	$(CC) $(CFLAGS) $< -o $@
+SRC := $(wildcard $(SRC_DIR)/*.c) \
+	$(wildcard $(SRC_DIR)/util/*.c) \
+	$(wildcard $(SRC_DIR)/scene/*c)
 
-$(SRC)/main.c: $(SRCS)
-	$(CC) $(CFLAGS) $< -o $@ 
+OBJ := $(SRC:$(SRC_DIR)/%.c=$(BIN_DIR)/%.o)
+
+all: $(EXEC)
+
+$(EXEC): $(OBJ)
+	$(CC) $(OBJ) -o $@ $(LIBS)
+
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f render
+	rm -rf $(EXEC) $(BIN_DIR)/*.o $(BIN_DIR)/util/*.o
+
+.PHONY: all clean
