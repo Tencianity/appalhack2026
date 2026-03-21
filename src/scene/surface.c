@@ -7,6 +7,17 @@
 #include <math.h>
 #include <stdlib.h>
 
+
+Sphere* createSphere(V3 center, float radius, Mat mat) {
+    Sphere* s = (Sphere*)malloc(sizeof(Sphere));
+    s->base.hit = hitSphere;
+    s->base.type = SPHERE_TYPE;
+    s->center = center;
+    s->radius = radius;
+    s->mat = mat;
+    return s;
+}
+
 int hitSphere(Surface* self, Ray ray, float tMin, 
         float tMax, HitRec* rec) {
 
@@ -32,15 +43,4 @@ int hitSphere(Surface* self, Ray ray, float tMin,
     rec->point = rayAt(ray, rec->t);
     rec->mat = sphere->mat;
     return 1;
-}
-
-
-Sphere* createSphere(V3 center, float radius, Mat mat) {
-    Sphere* s = (Sphere*)malloc(sizeof(Sphere));
-    s->base.hit = hitSphere;
-    s->base.type = SPHERE_TYPE;
-    s->center = center;
-    s->radius = radius;
-    s->mat = mat;
-    return s;
 }

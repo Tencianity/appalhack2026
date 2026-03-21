@@ -10,6 +10,7 @@
 
 typedef struct Surface Surface;
 struct Surface {
+    int type;
     int (*hit)(
         Surface* self,
         Ray ray,
@@ -17,7 +18,6 @@ struct Surface {
         float tMax,
         HitRec* rec
     );
-    int type;
     V3 velocity;
 };
 
@@ -29,10 +29,10 @@ typedef struct {
 } Sphere;
 
 
+Sphere* createSphere(V3 center, float radius, Mat mat);
+
 int hitSphere(Surface* self, Ray r, float tMin, 
         float tMax, HitRec* rec);
-
-Sphere* createSphere(V3 center, float radius, Mat mat);
 
 
 #endif
