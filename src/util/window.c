@@ -236,6 +236,7 @@ int runWindow(int width, int height) {
     
     HudBox hudBox = initHudBox(window, renderer, width, height);
     SceneBox sceneBox = initSceneBox(window, renderer, width, height);
+    initUI();
    
     Uint32 lastTime = SDL_GetTicks();
     int running = 1;
