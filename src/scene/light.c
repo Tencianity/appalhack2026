@@ -8,6 +8,7 @@
 #include "math/random.h"
 
 #include <math.h>
+#include <stdio.h>
 
 
 PointLight* createPointLight(V3 intensity, V3 pos) {
@@ -60,7 +61,7 @@ V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec, RNG* rng) {
     if (visibility <= 0.0f)
         return (V3) {0, 0, 0};
 
-    V3 e = v3InvScale(light->base.intensity, lightDirMag * lightDirMag);
+    V3 e = v3Scale(light->base.intensity, 1.0f / (lightDirMag * lightDirMag));
     float NdotL = fmaxf(0.0f, v3Dot(rec->normal, lightDirNorm));
     V3 lighting = v3Scale(e, NdotL);
     return v3Scale(lighting, visibility);

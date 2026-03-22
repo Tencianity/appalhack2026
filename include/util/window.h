@@ -2,7 +2,9 @@
 #define WINDOW_H
 
 #include "scene/scene.h"
+
 #include "util/ui.h"
+#include "util/thread.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -55,7 +57,7 @@ UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
 
 void drawHudBox(HudBox* box);
 
-void drawSceneBox(SceneBox* box, int frameSeed);
+void drawSceneBox(SceneBox* box, ThreadPool* pool);
 
 void drawUIBox(UIBox* box, V3 mousePos, int mouseDown);
 
