@@ -8,29 +8,43 @@
 #include <stdlib.h>
 #include <stdatomic.h>
 
-typedef struct Light Light;
+#define OBJECT_MAX 64
+#define LIGHT_MAX 8
+#define MAX_TILES 4096
+
 typedef struct Scene Scene;
+typedef struct TileJob TileJob;
+struct TileJob{
+    Scene* scene;
+    int startX, startY, endX, endY;
+    uint32_t frameSeed;
+};
+typedef struct Light Light;
 struct Scene {
-    V3 origin;
     int width;
     int height;
     uint32_t* buffer;
-    Surface* objects[256];
+    Surface* objects[OBJECT_MAX];
     int objCount;
-    Light* lights[32];
+    Light* lights[LIGHT_MAX];
     int lightCount;
     Camera* cam;
     int tilesX;
     int tilesY;
     int frameSeed;
+    BVHNode* bvhRoot;
+    TileJob jobs[MAX_TILES];
 };
 
 
+
 static inline void addSurface(Scene* scene, Surface* surface) {
+    if (scene->objCount >= OBJECT_MAX) return;
     scene->objects[scene->objCount++] = surface;
 }
 
 static inline void addLight(Scene* scene, Light* light) {
+    if (scene->lightCount >= LIGHT_MAX) return;
     scene->lights[scene->lightCount++] = light;
 }
 

@@ -142,7 +142,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     scene->width = sWidth;
     scene->height = sHeight;
     scene->buffer = malloc(sizeof(uint32_t) * sWidth * sHeight);
-    V3 origin = {2, 1, 1};
+    V3 origin = {1, 1, 1};
     V3 target = {2, 1, -1};
     V3 up     = {0, 1, 0};
     float aspect = (float) sWidth / sHeight;
@@ -169,6 +169,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
 
     initSceneLights(scene);
     initSceneSurfaces(scene);
+    scene->bvhRoot = buildBVH(scene->objects, 0, scene->objCount);
     return box;
 }
 
@@ -202,10 +203,10 @@ void initSceneLights(Scene* scene) {
         (V3) {30.0f, 30.0f, 30.0f},
         (V3) {0, 2, 3}
     );
-    addLight(scene, (Light*) pLight);
+    //addLight(scene, (Light*) pLight);
 
     AmbientLight* aLight = createAmbientLight(
-        (V3) {0.2f, 0.2f, 0.2f}
+        (V3) {0.8f, 0.8f, 0.8f}
     );
     addLight(scene, (Light*) aLight);
 }

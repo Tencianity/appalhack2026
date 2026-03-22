@@ -25,8 +25,8 @@ void initTiles(Scene* scene) {
 void renderTileJob(void* arg) {
     TileJob* job = (TileJob*) arg;
     Scene* scene = job->scene;
-    float swDiv = (float) (scene->width - 1);
-    float shDiv = (float) (scene->height - 1);
+    float invW = 1.0f / (scene->width - 1);
+    float invH = 1.0f / (scene->height - 1);
     for (int i = job->startY; i < job->endY; i++) {
         for (int j = job->startX; j < job->endX; j++) {
             V3 accumulation = {0, 0, 0};
@@ -36,49 +36,41 @@ void renderTileJob(void* arg) {
             for (int s = 0; s < AA_SAMPLES; s++) {
                 float du = rngFloat(&rng);
                 float dv = rngFloat(&rng);
-                float u = (j + du) / swDiv;
-                float v = (i + dv) / shDiv;
-                
+                float u = (j + du) * invW;
+                float v = (i + dv) * invH;
+
                 Ray ray = castRay(scene->cam, u, v);
                 RGBA rgba = colorRay(ray, scene, &rng);
                 accumulation.x += rgba.r;
                 accumulation.y += rgba.g;
                 accumulation.z += rgba.b;
             }
-
             accumulation.x /= AA_SAMPLES;
             accumulation.y /= AA_SAMPLES;
             accumulation.z /= AA_SAMPLES;
-
-            uint32_t a = (uint32_t) 255;
             uint32_t r = (uint32_t) accumulation.x;
             uint32_t g = (uint32_t) accumulation.y;
             uint32_t b = (uint32_t) accumulation.z;
-
-            uint32_t A = a << 24;
-            uint32_t R = r << 16;
-            uint32_t G = g << 8;
-            uint32_t B = b;
-            scene->buffer[i * scene->width + j] = A | R | G | B;
+            scene->buffer[i * scene->width + j] =
+                (255 << 24) | (r << 16) | (g << 8) | b;
         }
     }
-    free(job);
 }
 
 
 void renderScene(Scene* scene, ThreadPool* pool) {
     initTiles(scene);
     scene->frameSeed++;
+    int jobCount = 0;
     for (int ty = 0; ty < scene->tilesY; ty++) {
         for (int tx = 0; tx < scene->tilesX; tx++) {
+            TileJob* job = &scene->jobs[jobCount++];
             int startX = tx * TILE_SIZE;
             int startY = ty * TILE_SIZE;
             int endX = startX + TILE_SIZE;
             int endY = startY + TILE_SIZE;
-            if (endX > scene->width) endX = scene->width;
+            if (endX > scene->width)  endX = scene->width;
             if (endY > scene->height) endY = scene->height;
-
-            TileJob* job = malloc(sizeof(TileJob));
             job->scene = scene;
             job->startX = startX;
             job->startY = startY;
@@ -94,7 +86,7 @@ void renderScene(Scene* scene, ThreadPool* pool) {
 
 RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
     HitRec rec;
-    if (hitScene(scene, ray, 0.001f, 1000.0f, &rec)) {
+    if (hitBVH(scene->bvhRoot, ray, 0.001f, 1000.0f, &rec)) {
         V3 baseColor = rec.mat.color;
         if (rec.mat.isGround) {
             V3 p = rec.point;
@@ -122,9 +114,9 @@ RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
         }
 
         color = v3Clamp(color, 0.0f, 1.0f);
-        color.x = sqrtf(color.x);
-        color.y = sqrtf(color.y);
-        color.z = sqrtf(color.z);
+        color.x = powf(color.x, 0.5f);
+        color.y = powf(color.y, 0.5f);
+        color.z = powf(color.z, 0.5f);
         color = v3Scale(color, 255.0f);
         return (RGBA) {color.x, color.y, color.z, 255};
     }
@@ -133,20 +125,37 @@ RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
 }
 
 
-int hitScene(Scene* scene, Ray ray, float tMin, 
-        float tMax, HitRec* rec) {
-   
-    HitRec temp;
-    int hasHit = 0; // Boolean false
+int hitBVH(BVHNode* node, Ray ray, float tMin, float tMax, HitRec* rec) {
+    if (!hitAABB(node->box, ray, tMin, tMax))
+        return 0;
+
+    HitRec tempRec;
+    int hitAnything = 0;
     float closest = tMax;
 
-    for (int i = 0; i < scene->objCount; i++) {
-        Surface* obj = scene->objects[i];
-        if (obj->hit(obj, ray, tMin, closest, &temp)) {
-            hasHit = 1; // Boolean true
-            closest = temp.t;
-            *rec = temp;
+    if (node->left == NULL && node->right == NULL) {
+        for (int i = node->start; i < node->end; i++) {
+            if (node->objects[i]->hit(node->objects[i], ray, tMin, closest, &tempRec)) {
+                hitAnything = 1;
+                closest = tempRec.t;
+                *rec = tempRec;
+            }
         }
+        return hitAnything;
     }
-    return hasHit;
+
+    if (node->left)
+        if (hitBVH(node->left, ray, tMin, closest, &tempRec)) {
+            hitAnything = 1;
+            closest = tempRec.t;
+            *rec = tempRec;
+        }
+
+    if (node->right)
+        if (hitBVH(node->right, ray, tMin, closest, &tempRec)) {
+            hitAnything = 1;
+            *rec = tempRec;
+        }
+
+    return hitAnything;
 }

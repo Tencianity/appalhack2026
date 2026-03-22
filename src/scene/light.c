@@ -3,6 +3,7 @@
 #include "scene/surface.h"
 #include "scene/hit.h"
 #include "scene/color.h"
+#include "scene/scene.h"
 
 #include "math/vector.h"
 #include "math/random.h"
@@ -38,7 +39,7 @@ V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec, RNG* rng) {
     float lightDirMag = v3Norm(lightDir);
     V3 lightDirNorm = v3Normalize(lightDir);
 
-    int samples = 8;
+    int samples = 4;
     float visibility = 0.0f;
     for (int i = 0; i < samples; i++) {
         // Jitter light position slightly
@@ -53,8 +54,9 @@ V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec, RNG* rng) {
         V3 orig = v3Add(rec->point, v3Scale(rec->normal, 0.001f));
         Ray shadowRay = (Ray) {orig, dirNorm};
         HitRec shadowRec;
-        if (!hitScene(scene, shadowRay, 0.001f, dist, &shadowRec))
-            visibility += 1.0f;
+        if (hitBVH(scene->bvhRoot, shadowRay, 0.001f, dist, &shadowRec))
+            continue;    
+        visibility += 1.0f;
     }
 
     visibility /= samples;
