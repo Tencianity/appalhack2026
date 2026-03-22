@@ -47,6 +47,8 @@ void drawSceneBox(SceneBox* box, int frameSeed);
 
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
 
+void updateObjs(Scene* scene);
+
 int runWindow(int height, int width);
 
 

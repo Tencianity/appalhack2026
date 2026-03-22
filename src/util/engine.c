@@ -32,6 +32,8 @@ void transpose(Scene* scene, Surface* object, float speed) {
 void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         // Velocity and location of the surface
         V3 vel = sphere->base.velocity;
+        vel = v3Normalize(vel);
+        vel = v3Scale(vel, speed);
         V3 loc = sphere->center;
 
         // Bounds of the scene
@@ -39,6 +41,7 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         int boundX = scene->height;
 
         V3 nextLoc = v3Add(loc, vel);
+        V3 wallNorm = {0.f, 0.f, 0.f};
         int doesCollision = FALSE;
 
         // Create seeded random float for ball bounce variance
@@ -46,26 +49,25 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         float variance = (float) (rand() % 1000) / 1000.f;
         
         // Update collision surface normal based on scene boundaries
-        V3 wallNorm = {0.f, 0.f, 0.f};
         if (nextLoc.x - sphere->radius < 0) {
-            wallNorm = v3Add(wallNorm, (V3) {1.f, variance, 0.f});
+            wallNorm = v3Add(wallNorm, (V3) {1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.x + sphere->radius > boundX) {
-            wallNorm = v3Add(wallNorm, (V3) {-1.f, variance, 0.f});
+            wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
         if (nextLoc.y - sphere->radius < 0) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, 1.f, 0.f});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.y + sphere->radius > boundY) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, -1.f, 0.f});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
             doesCollision = TRUE;
         }
 
         // Reflect off wall if a collision occurs this frame
-        if (doesCollision) {
+        if (doesCollision == TRUE) {
             vel = v3Reflect(vel, wallNorm);
         }
         

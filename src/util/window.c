@@ -6,6 +6,7 @@
 #include "scene/tracer.h"
 #include "scene/light.h"
 #include "scene/color.h"
+#include "util/engine.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -176,6 +177,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
         0.25f, // radius
         sphereMat // material
     );
+    sphere->base.velocity = (V3) {1.f, 0.5f, 0.f};
     box.scene->objects[scene->objCount++] = (Surface*) sphere;
 
     return box;
@@ -217,6 +219,13 @@ void updateFpsText(HudBox* box, TTF_Font* font, float fps) {
         surface->h
     };
     SDL_FreeSurface(surface);
+}
+
+void updateObjs(Scene* scene) {
+    for (int i = 0; i < scene->objCount; i++) {
+        Surface* obj = scene->objects[i];
+        transpose(scene, obj, 0.02f);
+    }
 }
 
 
@@ -272,6 +281,7 @@ int runWindow(int width, int height) {
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox, frameSeed);
         drawUI(renderer, mouseDown, mousePos);
+        updateObjs(sceneBox.scene);
         frameSeed++;
     }
 
