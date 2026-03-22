@@ -40,33 +40,35 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         V3 wallNorm = {0.f, 0.f, 0.f};
         int doesCollision = FALSE;
 
-        // Create seeded random float for ball bounce variance
+        // Create seeded random float for ball bounce 0.f
         srand((unsigned int) time(NULL));
-        float variance = (float) (rand() % 1000) / 10000.f;
+        float variance = (float) (rand() % 1000);
+        float sign = (float) ((int) variance % 1); // -1.f or 1.f
+        variance *= sign / 10000.f;
         
         // Update collision surface normal based on scene boundaries
         if (nextLoc.x - sphere->radius < -1) {
-            wallNorm = v3Add(wallNorm, (V3) {1.f, variance, variance});
+            wallNorm = v3Add(wallNorm, (V3) {1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.x + sphere->radius > 1) {
-            wallNorm = v3Add(wallNorm, (V3) {-1.f, variance, variance});
+            wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.y - sphere->radius < -1) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, 1.f, variance});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.y + sphere->radius > 1) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, -1.f, variance});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.z - sphere->radius < -2) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, variance, 1.f});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, 1.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.z + sphere->radius > -1) {
-            wallNorm = v3Add(wallNorm, (V3) {variance, variance, -1.f});
+            wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, -1.f});
             doesCollision = TRUE;
         }
         else {
@@ -80,6 +82,7 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         // Update surface velocity and increment location
         vel = v3Normalize(vel); // Normalize velocity
         sphere->base.velocity = vel;
+        vel = v3Add(vel, (V3) {variance, variance, variance});
         vel = v3Scale(vel, speed); // Scale velocity by speed
         sphere->center = v3Add(loc, vel);
 }
