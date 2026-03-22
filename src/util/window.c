@@ -1,16 +1,17 @@
 #include "util/window.h"
 #include "util/ui.h"
+#include "util/engine.h"
+#include "util/thread.h"
 
 #include "scene/scene.h"
 #include "scene/camera.h"
 #include "scene/tracer.h"
 #include "scene/light.h"
 #include "scene/color.h"
-#include "util/engine.h"
 
 #include <stdio.h>
 #include <stdint.h>
-#include <math.h>
+#include <unistd.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -227,8 +228,8 @@ void drawHudBox(HudBox* box) {
 }
 
 
-void drawSceneBox(SceneBox* box, int frameSeed) {
-    renderScene(box->scene, frameSeed);
+void drawSceneBox(SceneBox* box, ThreadPool* pool) {
+    renderScene(box->scene, pool);
     SDL_UpdateTexture(box->texture, NULL, box->scene->buffer, 
             box->scene->width * sizeof(uint32_t));
     SDL_RenderCopy(box->renderer, box->texture, NULL, &box->rect);
@@ -326,19 +327,24 @@ int runWindow(int width, int height) {
     if (!texture) return 1;
 
     SDL_Event event;
-    
+
     HudBox hudBox = initHudBox(window, renderer, width, height);
     SceneBox sceneBox = initSceneBox(window, renderer, width, height);
     UIBox uiBox = initUIBox(window, renderer, width, height);
-   
+  
+    int threadCount = sysconf(_SC_NPROCESSORS_ONLN);
+    ThreadPool* pool = threadpoolCreate(threadCount);
+    printf("ThreadPool initialized with {%d} threads.\n", threadCount);
+
     Uint32 lastTime = SDL_GetTicks();
     int running = 1;
-    int frameSeed = 0;
     int frameCount = 0;
     float fps = 0;
     int mouseDown = 0;
     V3 mousePos;
     
+    printf("Successfully initialized window.\n");
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
@@ -363,10 +369,9 @@ int runWindow(int width, int height) {
         }
 
         drawHudBox(&hudBox);
-        drawSceneBox(&sceneBox, frameSeed);
+        drawSceneBox(&sceneBox, pool);
         drawUIBox(&uiBox, mousePos, mouseDown);
         updateObjs(sceneBox.scene, uiBox);
-        frameSeed++;
         SDL_RenderPresent(renderer);
     }
 
