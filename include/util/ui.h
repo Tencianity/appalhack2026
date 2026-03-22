@@ -18,6 +18,11 @@ typedef struct {
     char* label;
 } Slider;
 
+typedef struct {
+    Slider speedSlider;
+    Slider camSlider;
+} UI;
+
 Slider createSlider(int x, int y, int width, int height, char* label);
 
 void drawSlider(SDL_Renderer* renderer, Slider slider, TTF_Font* font);

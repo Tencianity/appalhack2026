@@ -57,13 +57,16 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
             wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
-        if (nextLoc.y - sphere->radius < 0) {
+        else if (nextLoc.y - sphere->radius < 0) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
             doesCollision = TRUE;
         }
         else if (nextLoc.y + sphere->radius > boundY) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
             doesCollision = TRUE;
+        }
+        else {
+            doesCollision = FALSE;
         }
 
         // Reflect off wall if a collision occurs this frame
