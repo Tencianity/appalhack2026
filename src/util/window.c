@@ -424,6 +424,7 @@ int runWindow(int width, int height) {
     free(sceneBox.scene->buffer);
     SDL_DestroyTexture(hudBox.texture);
     SDL_DestroyTexture(sceneBox.texture);
+    SDL_DestroyTexture(uiBox.texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     freeSurfaces(sceneBox.scene);
