@@ -19,8 +19,8 @@ typedef struct {
 } Slider;
 
 Slider createSlider(int x, int y, int width, int height, char* label);
-void drawSlider(SDL_Renderer* renderer, Slider slider);
-void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown);
+void drawSlider(SDL_Renderer* renderer, Slider slider, TTF_Font* font);
+void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown, TTF_Font* font);
 void initUI();
 void drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos);
 
