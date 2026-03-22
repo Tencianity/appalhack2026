@@ -112,5 +112,17 @@ static inline V3 randomOffset(RNG* rng, float radius) {
     };
 }
 
+static inline V3 randomInUnitSphere(RNG* rng) {
+    while (1) {
+        float x = rngFloat(rng) * 2.0f - 1.0f;
+        float y = rngFloat(rng) * 2.0f - 1.0f;
+        float z = rngFloat(rng) * 2.0f - 1.0f;
+        V3 p = {x, y, z};
+        if (v3Dot(p, p) < 1.0f) {
+            return p;
+        }
+    }
+}
+
 
 #endif

@@ -13,13 +13,15 @@
 #define MAX_TILES 4096
 
 typedef struct Scene Scene;
+typedef struct Light Light;
 typedef struct TileJob TileJob;
+
 struct TileJob{
     Scene* scene;
     int startX, startY, endX, endY;
     uint32_t frameSeed;
 };
-typedef struct Light Light;
+
 struct Scene {
     int width;
     int height;
@@ -34,8 +36,9 @@ struct Scene {
     int frameSeed;
     BVHNode* bvhRoot;
     TileJob jobs[MAX_TILES];
+    V3* accumBuffer;
+    int sampleCount;
 };
-
 
 
 static inline void addSurface(Scene* scene, Surface* surface) {

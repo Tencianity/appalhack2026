@@ -39,11 +39,12 @@ V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec, RNG* rng) {
     float lightDirMag = v3Norm(lightDir);
     V3 lightDirNorm = v3Normalize(lightDir);
 
-    int samples = 4;
+    int samples = 8;
     float visibility = 0.0f;
     for (int i = 0; i < samples; i++) {
-        // Jitter light position slightly
-        V3 jitter = randomOffset(rng, 0.01f);
+        float radius = 0.5f;
+        V3 jitter = randomInUnitSphere(rng);
+        jitter = v3Scale(jitter, radius);
         V3 samplePos = v3Add(light->pos, jitter);
 
         V3 dir = v3Sub(samplePos, rec->point);

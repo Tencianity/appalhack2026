@@ -143,12 +143,13 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     scene->height = sHeight;
     scene->buffer = malloc(sizeof(uint32_t) * sWidth * sHeight);
     V3 origin = {1, 1, 1};
-    V3 target = {2, 1, -1};
-    V3 up     = {0, 1, 0};
     float aspect = (float) sWidth / sHeight;
-    scene->cam = createCameraLookAt(origin, target, up, aspect);
+    scene->cam = createCameraFPS(origin, aspect);
     scene->objCount = 0;
     scene->lightCount = 0;
+    scene->accumBuffer = malloc(sizeof(V3) * sWidth * sHeight);
+    memset(scene->accumBuffer, 0, sizeof(V3) * sWidth * sHeight);
+    scene->sampleCount = 0;
 
     SceneBox box;
     box.window = window;
@@ -200,13 +201,13 @@ UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
 
 void initSceneLights(Scene* scene) {
     PointLight* pLight = createPointLight(
-        (V3) {30.0f, 30.0f, 30.0f},
-        (V3) {0, 2, 3}
+        (V3) {20.0f, 20.0f, 20.0f},
+        (V3) {0.5, 4, 2.5}
     );
-    //addLight(scene, (Light*) pLight);
+    addLight(scene, (Light*) pLight);
 
     AmbientLight* aLight = createAmbientLight(
-        (V3) {0.8f, 0.8f, 0.8f}
+        (V3) {0.2f, 0.2f, 0.2f}
     );
     addLight(scene, (Light*) aLight);
 }
@@ -335,6 +336,33 @@ void updateObjs(Scene* scene, UIBox uiBox) {
 }
 
 
+void checkCameraMovement(Camera* cam, int dx, int dy, float aspect) {
+    const Uint8* keys = SDL_GetKeyboardState(NULL);
+    float moveSpeed = 0.1f;
+    float sensitivity = 0.002f;
+    cam->yaw += dx * sensitivity;
+    cam->pitch += -dy * sensitivity;
+    if (cam->pitch > 1.5f) cam->pitch = 1.5f;
+    if (cam->pitch < -1.5f) cam->pitch = -1.5f;
+        
+    if (keys[SDL_SCANCODE_W])
+        cam->origin = v3Add(cam->origin, v3Scale(cam->forward, moveSpeed));
+
+    if (keys[SDL_SCANCODE_S])
+        cam->origin = v3Sub(cam->origin, v3Scale(cam->forward, moveSpeed));
+
+    if (keys[SDL_SCANCODE_D])
+        cam->origin = v3Add(cam->origin, v3Scale(cam->right, moveSpeed));
+
+    if (keys[SDL_SCANCODE_A])
+        cam->origin = v3Sub(cam->origin, v3Scale(cam->right, moveSpeed));
+    
+    if (keys[SDL_SCANCODE_SPACE]) cam->origin.y += moveSpeed;
+    if (keys[SDL_SCANCODE_LSHIFT]) cam->origin.y -= moveSpeed;
+    updateCamera(cam, aspect);
+}
+
+
 int runWindow(int width, int height) {
     int hasInitError = checkInit();
     if (hasInitError) return 1;
@@ -363,10 +391,15 @@ int runWindow(int width, int height) {
     float fps = 0;
     int mouseDown = 0;
     V3 mousePos;
-    
+    float aspect = (float) width / height;
+    int camInputActive = 0;
+
     printf("Successfully initialized window.\n");
+    printf("Camera input is not active.\n");
 
     while (running) {
+        float mouseDX = 0;
+        float mouseDY = 0;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
             if (event.type == SDL_MOUSEBUTTONDOWN) mouseDown = 1;
@@ -374,14 +407,19 @@ int runWindow(int width, int height) {
             if (event.type == SDL_MOUSEMOTION) {
                 mousePos = (V3) {event.motion.x, event.motion.y, 0.f};
             }
+            if (camInputActive && event.type == SDL_MOUSEMOTION) {
+                mouseDX += event.motion.xrel;
+                mouseDY += event.motion.yrel;
+            }
         }
+
+        if (camInputActive) 
+            checkCameraMovement(sceneBox.scene->cam, mouseDX, mouseDY, aspect);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        
         frameCount++;
         Uint32 currentTime = SDL_GetTicks();
-
         if (currentTime - lastTime >= 1000) {
             fps = frameCount;
             frameCount = 0;
@@ -392,7 +430,7 @@ int runWindow(int width, int height) {
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox, pool);
         drawUIBox(&uiBox, mousePos, mouseDown);
-        updateObjs(sceneBox.scene, uiBox);
+        //updateObjs(sceneBox.scene, uiBox);
         SDL_RenderPresent(renderer);
     }
 

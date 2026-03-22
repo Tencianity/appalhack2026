@@ -13,7 +13,7 @@
 #include <stdatomic.h>
 #include <stdio.h>
 
-#define AA_SAMPLES 8
+#define AA_SAMPLES 2
 
 
 void initTiles(Scene* scene) {
@@ -25,34 +25,23 @@ void initTiles(Scene* scene) {
 void renderTileJob(void* arg) {
     TileJob* job = (TileJob*) arg;
     Scene* scene = job->scene;
-    float invW = 1.0f / (scene->width - 1);
-    float invH = 1.0f / (scene->height - 1);
+    float swDiv = (float)(scene->width - 1);
+    float shDiv = (float)(scene->height - 1);
     for (int i = job->startY; i < job->endY; i++) {
         for (int j = job->startX; j < job->endX; j++) {
-            V3 accumulation = {0, 0, 0};
             uint32_t seed = (j * 1973) + (i * 9277) + job->frameSeed;
             RNG rng;
             initRNG(&rng, seed);
-            for (int s = 0; s < AA_SAMPLES; s++) {
-                float du = rngFloat(&rng);
-                float dv = rngFloat(&rng);
-                float u = (j + du) * invW;
-                float v = (i + dv) * invH;
-
-                Ray ray = castRay(scene->cam, u, v);
-                RGBA rgba = colorRay(ray, scene, &rng);
-                accumulation.x += rgba.r;
-                accumulation.y += rgba.g;
-                accumulation.z += rgba.b;
-            }
-            accumulation.x /= AA_SAMPLES;
-            accumulation.y /= AA_SAMPLES;
-            accumulation.z /= AA_SAMPLES;
-            uint32_t r = (uint32_t) accumulation.x;
-            uint32_t g = (uint32_t) accumulation.y;
-            uint32_t b = (uint32_t) accumulation.z;
-            scene->buffer[i * scene->width + j] =
-                (255 << 24) | (r << 16) | (g << 8) | b;
+            float du = rngFloat(&rng);
+            float dv = rngFloat(&rng);
+            float u = (j + du) / swDiv;
+            float v = (i + dv) / shDiv;
+            Ray ray = castRay(scene->cam, u, v);
+            V3 rgb = colorRay(ray, scene, &rng);
+            int idx = i * scene->width + j;
+            scene->accumBuffer[idx].x += rgb.x;
+            scene->accumBuffer[idx].y += rgb.y;
+            scene->accumBuffer[idx].z += rgb.z;
         }
     }
 }
@@ -61,6 +50,7 @@ void renderTileJob(void* arg) {
 void renderScene(Scene* scene, ThreadPool* pool) {
     initTiles(scene);
     scene->frameSeed++;
+    scene->sampleCount++;
     int jobCount = 0;
     for (int ty = 0; ty < scene->tilesY; ty++) {
         for (int tx = 0; tx < scene->tilesX; tx++) {
@@ -69,8 +59,10 @@ void renderScene(Scene* scene, ThreadPool* pool) {
             int startY = ty * TILE_SIZE;
             int endX = startX + TILE_SIZE;
             int endY = startY + TILE_SIZE;
+
             if (endX > scene->width)  endX = scene->width;
             if (endY > scene->height) endY = scene->height;
+
             job->scene = scene;
             job->startX = startX;
             job->startY = startY;
@@ -81,10 +73,31 @@ void renderScene(Scene* scene, ThreadPool* pool) {
         }
     }
     threadpoolWait(pool);
+
+    for (int i = 0; i < scene->width * scene->height; i++) {
+        V3 c = scene->accumBuffer[i];
+        c.x /= scene->sampleCount;
+        c.y /= scene->sampleCount;
+        c.z /= scene->sampleCount;
+        c.x = sqrtf(c.x);
+        c.y = sqrtf(c.y);
+        c.z = sqrtf(c.z);
+
+        if (c.x > 1.0f) c.x = 1.0f;
+        if (c.y > 1.0f) c.y = 1.0f;
+        if (c.z > 1.0f) c.z = 1.0f;
+        c = v3Scale(c, 255.0f);
+
+        scene->buffer[i] =
+            (255 << 24) |
+            ((uint32_t)c.x << 16) |
+            ((uint32_t)c.y << 8) |
+            ((uint32_t)c.z);
+    }
 }
 
 
-RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
+V3 colorRay(Ray ray, Scene* scene, RNG* rng) {
     HitRec rec;
     if (hitBVH(scene->bvhRoot, ray, 0.001f, 1000.0f, &rec)) {
         V3 baseColor = rec.mat.color;
@@ -112,16 +125,10 @@ RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
             V3 lightColor = light->illuminate(light, scene, &rec, rng);
             color = v3Add(color, v3Mult(baseColor, lightColor));
         }
-
-        color = v3Clamp(color, 0.0f, 1.0f);
-        color.x = powf(color.x, 0.5f);
-        color.y = powf(color.y, 0.5f);
-        color.z = powf(color.z, 0.5f);
-        color = v3Scale(color, 255.0f);
-        return (RGBA) {color.x, color.y, color.z, 255};
+        return v3Clamp(color, 0.0f, 1.0f);
     }
 
-    return (RGBA){180, 180, 255, 255};
+    return (V3) {0.8f, 0.8f, 1.0f};
 }
 
 

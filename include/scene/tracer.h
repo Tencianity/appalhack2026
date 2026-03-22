@@ -22,7 +22,7 @@ void renderScene(Scene* scene, ThreadPool* pool);
 
 Ray castRay(Camera* cam, float a, float b);
 
-RGBA colorRay(Ray ray, Scene* scene, RNG* rng);
+V3 colorRay(Ray ray, Scene* scene, RNG* rng);
 
 int hitBVH(BVHNode* node, Ray ray, float tMin, float tMax, HitRec* rec);
 

@@ -61,6 +61,8 @@ void drawUIBox(UIBox* box, V3 mousePos, int mouseDown);
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
 void updateObjs(Scene* scene, UIBox uiBox);
 
+void checkCameraMovement(Camera* cam, int dx, int dy, float aspect);
+
 int runWindow(int height, int width);
 
 static inline void freeSliders(UIBox* box) {
