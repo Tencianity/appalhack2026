@@ -10,30 +10,59 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <unistd.h> // for CPU count
 
 #define AA_SAMPLES 2
 
 
-void renderScene(Scene* scene, int frameSeed) {
-    for (int i = 0; i < scene->height; i++) {
+void* renderThread(void* arg) {
+    RenderTask* task = (RenderTask*) arg;
+    Scene* scene = task->scene;
+    for (int i = task->startRow; i < task->endRow; i++) {
         for (int j = 0; j < scene->width; j++) {
             float u = (float)j / (scene->width - 1);
             float v = (float)i / (scene->height - 1);
-           
-            Ray ray = castRay(scene->cam, u, v);
-            uint32_t seed = (j * 1973) + (i * 9277) + frameSeed;
+
+            uint32_t seed = (j * 1973) + (i * 9277) + task->frameSeed;
             RNG rng;
             initRNG(&rng, seed);
+
+            Ray ray = castRay(scene->cam, u, v);
             RGBA rgba = colorRay(ray, scene, &rng);
 
             uint32_t A = rgba.a << 24;
             uint32_t R = rgba.r << 16;
             uint32_t G = rgba.g << 8;
             uint32_t B = rgba.b;
-            
-            uint32_t color = A | R | G | B;
-            scene->buffer[i * scene->width + j] = color;
+            scene->buffer[i * scene->width + j] = A | R | G | B;
         }
+    }
+    return NULL;
+}
+
+
+void renderScene(Scene* scene, int frameSeed) {
+    int numThreads = sysconf(_SC_NPROCESSORS_ONLN);
+    pthread_t threads[numThreads];
+    RenderTask tasks[numThreads];
+    int rowsPerThread = scene->height / numThreads;
+    for (int t = 0; t < numThreads; t++) {
+        tasks[t].scene = scene;
+        tasks[t].frameSeed = frameSeed;
+        tasks[t].startRow = t * rowsPerThread;
+
+        if (t == numThreads - 1) {
+            tasks[t].endRow = scene->height; // last thread takes remainder
+        } else {
+            tasks[t].endRow = (t + 1) * rowsPerThread;
+        }
+
+        pthread_create(&threads[t], NULL, renderThread, &tasks[t]);
+    }
+
+    for (int t = 0; t < numThreads; t++) {
+        pthread_join(threads[t], NULL);
     }
 }
 

@@ -8,6 +8,15 @@
 
 #include <stdint.h>
 
+typedef struct {
+    Scene* scene;
+    int startRow;
+    int endRow;
+    int frameSeed;
+} RenderTask;
+
+
+void* renderThread(void* arg);
 
 void renderScene(Scene* scene, int frameSeed);
 
