@@ -24,6 +24,15 @@ typedef struct {
     Scene* scene;
 } SceneBox;
 
+typedef struct {
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Font* font;
+    SDL_Rect rect;
+    Slider* sliders[256];
+    int sldrCount;
+} UIBox;
+
 int checkInit();
 
 TTF_Font* createFont();
@@ -41,15 +50,26 @@ HudBox initHudBox(SDL_Window* window, SDL_Renderer* renderer,
 SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer, 
         int wWidth, int wHeight);
 
+UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer, 
+        int wWidth, int wHeight);
+
 void drawHudBox(HudBox* box);
 
 void drawSceneBox(SceneBox* box, int frameSeed);
 
+void drawUIBox(UIBox* box, V3 mousePos, int mouseDown);
+
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
 
-void updateObjs(Scene* scene, UI uiRefs);
+void updateObjs(Scene* scene, UIBox uiBox);
 
 int runWindow(int height, int width);
+
+static inline void freeSliders(UIBox* box) {
+    for (int i = 0; i < box->sldrCount; i++) {
+        free(box->sliders[i]);
+    }
+}
 
 
 #endif

@@ -5,6 +5,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <math/vector.h>
 
+static inline int square(int num) { return num * num; };
+
 typedef struct {
     SDL_Rect border;
     // Value represented by the button
@@ -19,19 +21,8 @@ typedef struct {
     char* label;
 } Slider;
 
-typedef struct {
-    Slider speedSlider;
-    Slider camSlider;
-} UI;
-
-Slider createSlider(int x, int y, int width, int height, char* label);
-
-void drawSlider(SDL_Renderer* renderer, Slider slider, TTF_Font* font);
+Slider* createSlider(int x, int y, int width, int height, char* label);
 
 void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown, TTF_Font* font);
-
-UI initUI();
-
-UI drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos);
 
 #endif

@@ -72,7 +72,6 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         else {
             doesCollision = FALSE;
         }
-        
         // Reflect off wall if a collision occurs this frame
         if (doesCollision == TRUE) {
             vel = v3Reflect(vel, wallNorm);

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -183,6 +184,37 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     return box;
 }
 
+UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
+        int wWidth, int wHeight) {
+            
+    UIBox box;
+    box.window = window;
+    box.renderer = renderer;
+
+    SDL_Rect uiRect = {
+        (wWidth / 10),
+        0,
+        wWidth / 10,
+        wHeight * 9 / 10
+    };
+
+    box.rect = uiRect;
+
+    box.font = TTF_OpenFont("assets/fonts/JetBrainsMono-Regular.ttf", 15);
+
+    // Create the slider representing speed multiplier
+    Slider* speedSlider = createSlider(150, 100, 100, 50, "Speed");
+    speedSlider->value = 5.f;
+    
+    Slider* camSlider = createSlider(150, 170, 100, 50, "Camera");
+    camSlider->value = 0.f;
+    
+    box.sldrCount = 0;
+    box.sliders[box.sldrCount++] = speedSlider;
+    box.sliders[box.sldrCount++] = camSlider;
+    
+    return box;
+}
 
 void drawHudBox(HudBox* box) {
     SDL_SetRenderDrawColor(box->renderer, 255, 255, 255, 255);
@@ -200,7 +232,59 @@ void drawSceneBox(SceneBox* box, int frameSeed) {
     SDL_UpdateTexture(box->texture, NULL, box->scene->buffer, 
             box->scene->width * sizeof(uint32_t));
     SDL_RenderCopy(box->renderer, box->texture, NULL, &box->rect);
-    SDL_RenderPresent(box->renderer);
+    // SDL_RenderPresent(box->renderer);
+}
+
+void drawUIBox(UIBox* box, V3 mousePos, int mouseDown) {
+    for (int curr = 0; curr < box->sldrCount; curr++) {
+        Slider* sptr = box->sliders[curr];
+        updateSlider(box->renderer, sptr, mousePos, mouseDown, box->font);
+        Slider slider = *sptr;
+
+        // Draw the border
+        // SDL_Color grayish = {50, 50, 50, 255};
+        SDL_SetRenderDrawColor(box->renderer, 50, 50, 50, 150);
+        SDL_RenderDrawRect(box->renderer, &(slider.border));
+        SDL_RenderFillRect(box->renderer, &(slider.border));
+        
+        // SDL_Color aqua = {0, 50, 255, 255};
+        SDL_SetRenderDrawColor(box->renderer, 0, 50, 255, 255);
+        
+        // Draw the draggable button
+        for (int col = 0; col < slider.border.w; col++) {
+            for (int row = 0; row < slider.border.h; row++) {
+                int leftBorder = slider.border.x;
+                int rightBorder = slider.border.x + slider.border.w;
+
+                // Represents how far the current point is fron the center of the button
+                V3 v = {slider.border.x + col, slider.border.y + row, 0.f};
+                v = v3Sub(slider.btnWorldPos, v);
+                float dist = sqrt( square(v.x) + square(v.y) );
+                
+                // Draw button within a radius (circle)
+                if (dist < slider.btnRadius) {
+                    SDL_SetRenderDrawColor(box->renderer, 0, 50, 255, 255);
+                    SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
+                }
+                // Draw line that the button drags across
+                else if (slider.border.x + col > leftBorder + 10
+                        && slider.border.x + col < rightBorder - 10
+                        && row == slider.border.h / 2) {
+                    SDL_SetRenderDrawColor(box->renderer, 200, 100, 0, 255);
+                    SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
+                }
+
+            }
+        }
+        // Draw the label of the slider
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surface = TTF_RenderText_Solid(box->font, slider.label, white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(box->renderer, surface);
+        SDL_Rect textRect = {slider.border.x - 5, slider.border.y - 5, 30, 20};
+        SDL_RenderCopy(box->renderer, texture, NULL, &textRect);
+        SDL_FreeSurface(surface);
+    }
+
 }
 
 
@@ -221,10 +305,10 @@ void updateFpsText(HudBox* box, TTF_Font* font, float fps) {
     SDL_FreeSurface(surface);
 }
 
-void updateObjs(Scene* scene, UI uiRefs) {
+void updateObjs(Scene* scene, UIBox uiBox) {
     for (int i = 0; i < scene->objCount; i++) {
         Surface* obj = scene->objects[i];
-        transpose(scene, obj, (uiRefs.speedSlider.value * 0.005f));
+        transpose(scene, obj, (uiBox.sliders[0]->value * 0.005f));
     }
 }
 
@@ -245,7 +329,7 @@ int runWindow(int width, int height) {
     
     HudBox hudBox = initHudBox(window, renderer, width, height);
     SceneBox sceneBox = initSceneBox(window, renderer, width, height);
-    UI uiRefs = initUI();
+    UIBox uiBox = initUIBox(window, renderer, width, height);
    
     Uint32 lastTime = SDL_GetTicks();
     int running = 1;
@@ -254,7 +338,7 @@ int runWindow(int width, int height) {
     float fps = 0;
     int mouseDown = 0;
     V3 mousePos;
-
+    
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
@@ -280,9 +364,10 @@ int runWindow(int width, int height) {
 
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox, frameSeed);
-        uiRefs = drawUI(renderer, mouseDown, mousePos);
-        updateObjs(sceneBox.scene, uiRefs);
+        drawUIBox(&uiBox, mousePos, mouseDown);
+        updateObjs(sceneBox.scene, uiBox);
         frameSeed++;
+        SDL_RenderPresent(renderer);
     }
 
     free(sceneBox.scene->buffer);
@@ -290,6 +375,9 @@ int runWindow(int width, int height) {
     SDL_DestroyTexture(sceneBox.texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    freeSurfaces(sceneBox.scene);
+    freeLights(sceneBox.scene);
+    freeSliders(&uiBox);
     SDL_Quit();
     return 0;
 }
