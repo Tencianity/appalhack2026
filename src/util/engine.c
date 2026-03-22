@@ -5,6 +5,7 @@
 
 #include "scene/surface.h"
 #include "scene/scene.h"
+#include "util/engine.h"
 #include "math/vector.h"
 
 #define FALSE 0
@@ -21,50 +22,56 @@ void transpose(Scene* scene, Surface* object, float speed) {
     // Not a surface
     switch(object->type) {
         case (SPHERE_TYPE):
-            // Velocity and location of the surface
-            V3 vel = object->velocity;
-            Sphere* sphere = (Sphere*) object;
-            V3 loc = sphere->center;
-
-            // Bounds of the scene
-            int boundY = scene->width;
-            int boundX = scene->height;
-
-            V3 nextLoc = v3Add(loc, vel);
-            int doesCollision = FALSE;
-
-            // Create seeded random float for ball bounce variance
-            srand((unsigned int) time(NULL));
-            float variance = (float) (rand() % 1000) / 1000.f;
-            
-            // Update collision surface normal based on scene boundaries
-            V3 wallNorm = {0.f, 0.f, 0.f};
-            if (nextLoc.x - sphere->radius < 0) {
-                wallNorm = v3Add(wallNorm, (V3) {1.f, variance, 0.f});
-                doesCollision = TRUE;
-            }
-            else if (nextLoc.x + sphere->radius > boundX) {
-                wallNorm = v3Add(wallNorm, (V3) {-1.f, variance, 0.f});
-                doesCollision = TRUE;
-            }
-            if (nextLoc.y - sphere->radius < 0) {
-                wallNorm = v3Add(wallNorm, (V3) {variance, 1.f, 0.f});
-                doesCollision = TRUE;
-            }
-            else if (nextLoc.y + sphere->radius > boundY) {
-                wallNorm = v3Add(wallNorm, (V3) {variance, -1.f, 0.f});
-                doesCollision = TRUE;
-            }
-
-            // Reflect off wall if a collision occurs this frame
-            if (doesCollision) {
-                vel = v3Reflect(vel, wallNorm);
-            }
-            
-            // Update surface velocity and increment location
-            vel = v3Normalize(vel); // Normalize velocity
-            vel = v3Scale(vel, speed); // Scale velocity by speed
-            sphere->base.velocity = vel;
-            sphere->center = v3Add(loc, vel);
+            mvSphere(scene, (Sphere*) object, speed);
+            break;
+        default:
+            printf("Could be anything... be on your toes.\n");
     }
+}
+
+void mvSphere(Scene* scene, Sphere* sphere, float speed) {
+        // Velocity and location of the surface
+        V3 vel = sphere->base.velocity;
+        V3 loc = sphere->center;
+
+        // Bounds of the scene
+        int boundY = scene->width;
+        int boundX = scene->height;
+
+        V3 nextLoc = v3Add(loc, vel);
+        int doesCollision = FALSE;
+
+        // Create seeded random float for ball bounce variance
+        srand((unsigned int) time(NULL));
+        float variance = (float) (rand() % 1000) / 1000.f;
+        
+        // Update collision surface normal based on scene boundaries
+        V3 wallNorm = {0.f, 0.f, 0.f};
+        if (nextLoc.x - sphere->radius < 0) {
+            wallNorm = v3Add(wallNorm, (V3) {1.f, variance, 0.f});
+            doesCollision = TRUE;
+        }
+        else if (nextLoc.x + sphere->radius > boundX) {
+            wallNorm = v3Add(wallNorm, (V3) {-1.f, variance, 0.f});
+            doesCollision = TRUE;
+        }
+        if (nextLoc.y - sphere->radius < 0) {
+            wallNorm = v3Add(wallNorm, (V3) {variance, 1.f, 0.f});
+            doesCollision = TRUE;
+        }
+        else if (nextLoc.y + sphere->radius > boundY) {
+            wallNorm = v3Add(wallNorm, (V3) {variance, -1.f, 0.f});
+            doesCollision = TRUE;
+        }
+
+        // Reflect off wall if a collision occurs this frame
+        if (doesCollision) {
+            vel = v3Reflect(vel, wallNorm);
+        }
+        
+        // Update surface velocity and increment location
+        vel = v3Normalize(vel); // Normalize velocity
+        vel = v3Scale(vel, speed); // Scale velocity by speed
+        sphere->base.velocity = vel;
+        sphere->center = v3Add(loc, vel);
 }
