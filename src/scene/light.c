@@ -63,7 +63,6 @@ V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec, RNG* rng) {
     V3 e = v3InvScale(light->base.intensity, lightDirMag * lightDirMag);
     float NdotL = fmaxf(0.0f, v3Dot(rec->normal, lightDirNorm));
     V3 lighting = v3Scale(e, NdotL);
-    //return (V3) {visibility, visibility, visibility};
     return v3Scale(lighting, visibility);
 }
 

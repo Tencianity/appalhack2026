@@ -23,6 +23,8 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(EXEC) $(BIN_DIR)/*.o $(BIN_DIR)/util/*.o
+	rm -rf $(EXEC) $(BIN_DIR)/*.o \
+		$(BIN_DIR)/util/*.o \
+		$(BIN_DIR)/scene/*.o
 
 .PHONY: all clean

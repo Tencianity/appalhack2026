@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 void renderScene(Scene* scene, int frameSeed) {
@@ -46,10 +47,15 @@ RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
         }
 
         V3 color = v3Mult(rec.mat.color, lightColor);
-        color = v3Scale(v3Clamp(color, 0.0f, 1.0f), 255.0f);
+        color = v3Clamp(color, 0.0f, 1.0f);
+        color.x = sqrtf(color.x);
+        color.y = sqrtf(color.y);
+        color.z = sqrtf(color.z);
+        
+        color = v3Scale(color, 255.0f);
         return (RGBA) {color.x, color.y, color.z, 255};
     }
-    return (RGBA) {0, 0, 0, 255}; // Should be black if not hit
+    return (RGBA) {180, 180, 255, 255}; // Should be black if not hit
 }
 
 

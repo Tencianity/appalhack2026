@@ -50,7 +50,7 @@ static inline V3 v3Clamp(V3 v, float min, float max) {
     return (V3) {
         fminf(fmaxf(v.x, min), max),
         fminf(fmaxf(v.y, min), max),
-        fminf(fmaxf(v.x, min), max)
+        fminf(fmaxf(v.z, min), max)
     };
 }
 
