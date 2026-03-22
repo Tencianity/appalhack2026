@@ -8,22 +8,22 @@
 #include <math.h>
 
 
-PointLight createPointLight(V3 intensity, V3 pos) {
-    PointLight light;
-    light.base.type = POINTLIGHT_TYPE;
-    light.base.illuminate = pointIlluminate;
-    light.base.intensity = intensity;
-    light.pos = pos;
+PointLight* createPointLight(V3 intensity, V3 pos) {
+    PointLight* light = (PointLight*)malloc(sizeof(PointLight));
+    light->base.type = POINTLIGHT_TYPE;
+    light->base.illuminate = pointIlluminate;
+    light->base.intensity = intensity;
+    light->pos = pos;
 
     return light;
 }
 
 
-AmbientLight createAmbientLight(V3 intensity) {
-    AmbientLight light;
-    light.base.type = AMBIENTLIGHT_TYPE;
-    light.base.illuminate = ambientIlluminate;
-    light.base.intensity = intensity;
+AmbientLight* createAmbientLight(V3 intensity) {
+    AmbientLight* light = (AmbientLight*)malloc(sizeof(AmbientLight));
+    light->base.type = AMBIENTLIGHT_TYPE;
+    light->base.illuminate = ambientIlluminate;
+    light->base.intensity = intensity;
 
     return light;
 }

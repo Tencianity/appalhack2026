@@ -33,9 +33,9 @@ typedef struct {
 } AmbientLight;
 
 
-PointLight createPointLight(V3 intensity, V3 pos);
+PointLight* createPointLight(V3 intensity, V3 pos);
 
-AmbientLight createAmbientLight(V3 intensity);
+AmbientLight* createAmbientLight(V3 intensity);
 
 V3 pointIlluminate(Light* self, Scene* scene, HitRec* rec);
 

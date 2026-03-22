@@ -1,9 +1,11 @@
 #include "util/window.h"
+#include "util/ui.h"
+
 #include "scene/scene.h"
 #include "scene/camera.h"
-#include "scene/color.h"
 #include "scene/tracer.h"
-#include "util/ui.h"
+#include "scene/light.h"
+#include "scene/color.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -138,6 +140,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     scene->buffer = malloc(sizeof(uint32_t) * sWidth * sHeight);
     scene->cam = createCamera((float) sWidth / sHeight);
     scene->objCount = 0;
+    scene->lightCount = 0;
 
     SDL_Rect sceneRect = {
         0, 
@@ -159,14 +162,21 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     box.scene = scene;
 
     // Here temporarally
-    RGBA sphereColor = {255, 255, 255, 255};
+    PointLight* light = createPointLight(
+        (V3) {0.8f, 0.8f, 0.8f},
+        (V3) {2.0f, 2.0f, 2.0f}
+    );
+    box.scene->lights[scene->lightCount++] = (Light*) light;
+
+    // Here temporarally
+    V3 sphereColor = {0.2f, 0.2f, 0.8f};
     Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
     Sphere* sphere = createSphere(
         (V3) {0, 0, -1}, // origin
         0.25f, // radius
         sphereMat // material
     );
-    box.scene->objects[scene->objCount++] = (Surface*)sphere;
+    box.scene->objects[scene->objCount++] = (Surface*) sphere;
 
     return box;
 }

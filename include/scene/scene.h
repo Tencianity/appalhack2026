@@ -20,10 +20,18 @@ struct Scene {
     Camera* cam;
 };
 
+
 static inline void freeSurfaces(Scene* scene) {
     for (int i = 0; i < scene->objCount; i++) {
         free(scene->objects[i]);
     }
 }
+
+static inline void freeLights(Scene* scene) {
+    for (int i = 0; i < scene->lightCount; i++) {
+        free(scene->lights[i]);
+    }
+}
+
 
 #endif

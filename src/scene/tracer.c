@@ -33,12 +33,14 @@ void renderScene(Scene* scene) {
 RGBA colorRay(Ray ray, Scene* scene) {
     HitRec rec;
     if (hitScene(scene, ray, 0.001f, 1000.0f, &rec)) {
-        V3 color = rec.mat.color;
+        V3 lightColor = {0, 0, 0};
         for (int i = 0; i < scene->lightCount; i++) {
             Light* light = scene->lights[i];
             V3 contribution = light->illuminate(light, scene, &rec);
-            color = v3Add(color, contribution);
+            lightColor = v3Add(lightColor, contribution);
         }
+
+        V3 color = v3Mult(rec.mat.color, lightColor);
         color = v3Scale(v3Clamp(color, 0.0f, 1.0f), 255.0f);
         return (RGBA) {color.x, color.y, color.z, 255};
     }
