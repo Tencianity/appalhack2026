@@ -164,13 +164,13 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
 
     // Here temporarally
     PointLight* light = createPointLight(
-        (V3) {100.0f, 100.0f, 100.0f},
+        (V3) {30.0f, 30.0f, 30.0f},
         (V3) {3.0f, 2.0f, 3.0f}
     );
     box.scene->lights[scene->lightCount++] = (Light*) light;
 
     // Here temporarally
-    V3 sphereColor = {0.2f, 0.2f, 0.8f};
+    V3 sphereColor = {0.71f, 0.12f, 0.92f};
     Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
     Sphere* sphere = createSphere(
         (V3) {0, 0, -1}, // origin

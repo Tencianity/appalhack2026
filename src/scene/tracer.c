@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define AA_SAMPLES 2
+
 
 void renderScene(Scene* scene, int frameSeed) {
     for (int i = 0; i < scene->height; i++) {
