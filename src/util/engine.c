@@ -52,7 +52,7 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
 
         // Find bounding box that contains spheres
         Box* bounds;
-        for (int i = 0; i < sizeof(scene->objects) / sizeof(scene->objects[0]); i++) {
+        for (int i = 0; i < scene->objCount; i++) {
             if (scene->objects[i]->type == BOX_TYPE) {
                 bounds = (Box*) scene->objects[i];
             }

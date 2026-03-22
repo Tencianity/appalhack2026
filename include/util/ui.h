@@ -23,6 +23,6 @@ typedef struct {
 
 Slider* createSlider(int x, int y, int width, int height, char* label);
 
-void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown, TTF_Font* font);
+int updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown, TTF_Font* font);
 
 #endif
