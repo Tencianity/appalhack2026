@@ -68,15 +68,16 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         else {
             doesCollision = FALSE;
         }
+        printf("bx: %d, by: %d, x: %f, y: %f, rad: %f\n", boundX, boundY, nextLoc.x, nextLoc.y, sphere->radius);
 
         // Reflect off wall if a collision occurs this frame
-        if (doesCollision == TRUE) {
-            vel = v3Reflect(vel, wallNorm);
-        }
+        // if (doesCollision == TRUE) {
+        //     vel = v3Reflect(vel, wallNorm);
+        // }
         
         // Update surface velocity and increment location
         vel = v3Normalize(vel); // Normalize velocity
-        vel = v3Scale(vel, speed); // Scale velocity by speed
         sphere->base.velocity = vel;
+        vel = v3Scale(vel, speed); // Scale velocity by speed
         sphere->center = v3Add(loc, vel);
 }

@@ -221,10 +221,10 @@ void updateFpsText(HudBox* box, TTF_Font* font, float fps) {
     SDL_FreeSurface(surface);
 }
 
-void updateObjs(Scene* scene) {
+void updateObjs(Scene* scene, UI uiRefs) {
     for (int i = 0; i < scene->objCount; i++) {
         Surface* obj = scene->objects[i];
-        transpose(scene, obj, 0.02f);
+        transpose(scene, obj, (uiRefs.speedSlider.value * 0.005f));
     }
 }
 
@@ -245,7 +245,7 @@ int runWindow(int width, int height) {
     
     HudBox hudBox = initHudBox(window, renderer, width, height);
     SceneBox sceneBox = initSceneBox(window, renderer, width, height);
-    initUI();
+    UI uiRefs = initUI();
    
     Uint32 lastTime = SDL_GetTicks();
     int running = 1;
@@ -280,8 +280,8 @@ int runWindow(int width, int height) {
 
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox, frameSeed);
-        drawUI(renderer, mouseDown, mousePos);
-        updateObjs(sceneBox.scene);
+        uiRefs = drawUI(renderer, mouseDown, mousePos);
+        updateObjs(sceneBox.scene, uiRefs);
         frameSeed++;
     }
 

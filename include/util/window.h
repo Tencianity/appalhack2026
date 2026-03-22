@@ -2,6 +2,7 @@
 #define WINDOW_H
 
 #include "scene/scene.h"
+#include "util/ui.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -47,7 +48,7 @@ void drawSceneBox(SceneBox* box, int frameSeed);
 
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
 
-void updateObjs(Scene* scene);
+void updateObjs(Scene* scene, UI uiRefs);
 
 int runWindow(int height, int width);
 

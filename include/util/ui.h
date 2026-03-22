@@ -2,6 +2,7 @@
 #define UI_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <math/vector.h>
 
 typedef struct {
@@ -29,8 +30,8 @@ void drawSlider(SDL_Renderer* renderer, Slider slider, TTF_Font* font);
 
 void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown, TTF_Font* font);
 
-void initUI();
+UI initUI();
 
-void drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos);
+UI drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos);
 
 #endif

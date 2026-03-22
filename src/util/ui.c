@@ -96,7 +96,7 @@ void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouse
     drawSlider(renderer, *slider, font);
 }
 
-void initUI() {
+UI initUI() {
     // Create the slider representing speed multiplier
     speedSlider = createSlider(10, 100, 100, 50, "Speed");
     speedSlider.value = 5.f;
@@ -105,13 +105,15 @@ void initUI() {
     camSlider.value = 0.f;
 
     font = TTF_OpenFont("assets/fonts/JetBrainsMono-Regular.ttf", 15);
+    return (UI) {speedSlider, camSlider};
 }
 
-void drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos) {
+UI drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos) {
 
     updateSlider(renderer, &speedSlider, mousePos, mouseDown, font);
     updateSlider(renderer, &camSlider, mousePos, mouseDown, font);
     SDL_RenderPresent(renderer);
+    return (UI) {speedSlider, camSlider};
 }
 
 
