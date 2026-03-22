@@ -35,34 +35,29 @@ typedef struct {
     int sldrCount;
 } UIBox;
 
+
 int checkInit();
-
 TTF_Font* createFont();
-
 SDL_Window* createWindow(int width, int height);
-
 SDL_Renderer* createRenderer(SDL_Window* window);
-
 SDL_Texture* createSceneTexture(SDL_Window* window, 
         SDL_Renderer* renderer, int width, int height);
 
 HudBox initHudBox(SDL_Window* window, SDL_Renderer* renderer, 
         int wWidth, int wHeight);
-
 SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer, 
         int wWidth, int wHeight);
-
 UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer, 
         int wWidth, int wHeight);
 
+void initSceneLights(Scene* scene);
+void initSceneSurfaces(Scene* scene);
+
 void drawHudBox(HudBox* box);
-
 void drawSceneBox(SceneBox* box, ThreadPool* pool);
-
 void drawUIBox(UIBox* box, V3 mousePos, int mouseDown);
 
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
-
 void updateObjs(Scene* scene, UIBox uiBox);
 
 int runWindow(int height, int width);

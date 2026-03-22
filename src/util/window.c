@@ -131,6 +131,7 @@ HudBox initHudBox(SDL_Window* window, SDL_Renderer* renderer,
     return box;
 }
 
+
 SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer, 
         int wWidth, int wHeight) {
 
@@ -145,13 +146,6 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     scene->objCount = 0;
     scene->lightCount = 0;
 
-    SDL_Rect sceneRect = {
-        0, 
-        wHeight / 10,
-        sWidth, 
-        sHeight
-    };
-
     SceneBox box;
     box.window = window;
     box.renderer = renderer;
@@ -161,29 +155,19 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
         sWidth,
         sHeight
     );
-    box.rect = sceneRect;
+    box.rect = (SDL_Rect) {
+        0, 
+        wHeight / 10,
+        sWidth, 
+        sHeight
+    };
     box.scene = scene;
 
-    // Here temporarally
-    PointLight* light = createPointLight(
-        (V3) {30.0f, 30.0f, 30.0f},
-        (V3) {3.0f, 2.0f, 3.0f}
-    );
-    box.scene->lights[scene->lightCount++] = (Light*) light;
-
-    // Here temporarally
-    V3 sphereColor = {0.71f, 0.12f, 0.92f};
-    Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
-    Sphere* sphere = createSphere(
-        (V3) {0, 0, -1}, // origin
-        0.25f, // radius
-        sphereMat // material
-    );
-    sphere->base.velocity = (V3) {1.f, 0.5f, 0.4f};
-    box.scene->objects[scene->objCount++] = (Surface*) sphere;
-
+    initSceneLights(scene);
+    initSceneSurfaces(scene);
     return box;
 }
+
 
 UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
         int wWidth, int wHeight) {
@@ -191,31 +175,67 @@ UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
     UIBox box;
     box.window = window;
     box.renderer = renderer;
-
-    SDL_Rect uiRect = {
+    box.rect = (SDL_Rect) {
         (wWidth / 10),
         0,
         wWidth / 10,
         wHeight * 9 / 10
     };
-
-    box.rect = uiRect;
-
     box.font = TTF_OpenFont("assets/fonts/JetBrainsMono-Regular.ttf", 15);
 
     // Create the slider representing speed multiplier
     Slider* speedSlider = createSlider(150, 100, 100, 50, "Speed");
     speedSlider->value = 5.f;
-    
     Slider* camSlider = createSlider(150, 170, 100, 50, "Camera");
     camSlider->value = 0.f;
-    
     box.sldrCount = 0;
     box.sliders[box.sldrCount++] = speedSlider;
     box.sliders[box.sldrCount++] = camSlider;
     
     return box;
 }
+
+
+void initSceneLights(Scene* scene) {
+    PointLight* pLight = createPointLight(
+        (V3) {30.0f, 30.0f, 30.0f},
+        (V3) {3.0f, 2.0f, 3.0f}
+    );
+    addLight(scene, (Light*) pLight);
+
+    AmbientLight* aLight = createAmbientLight(
+        (V3) {0.2f, 0.2f, 0.2f}
+    );
+    addLight(scene, (Light*) aLight);
+}
+
+
+void initSceneSurfaces(Scene* scene) {
+    V3 groundColor = (V3) {0.75f, 0.75f, 0.75f};
+    Mat groundMat = (Mat) {groundColor, 0, 0, 0, 0};
+    Plane* ground = createPlane(0.0f, groundMat);
+    addSurface(scene, (Surface*) ground);
+
+    V3 sphereColor = (V3) {0.71f, 0.12f, 0.92f};
+    Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
+    Sphere* sphere = createSphere(
+        (V3) {0, 1, -1},
+        0.25f,
+        sphereMat
+    );
+    sphere->base.velocity = (V3) {1.f, 0.5f, 0.4f};
+    addSurface(scene, (Surface*) sphere);
+
+    V3 cubeColor = {0.41f, 0.12f, 0.92f};
+    Mat cubeMat = (Mat) {cubeColor, 0, 0, 0, 0};
+    Cube* cube = createCube(
+        (V3) {-1, -1, -3},
+        (V3) {1, 1, -3},
+        cubeMat
+    );
+    addSurface(scene, (Surface*) cube);
+}
+
 
 void drawHudBox(HudBox* box) {
     SDL_SetRenderDrawColor(box->renderer, 255, 255, 255, 255);
@@ -233,8 +253,8 @@ void drawSceneBox(SceneBox* box, ThreadPool* pool) {
     SDL_UpdateTexture(box->texture, NULL, box->scene->buffer, 
             box->scene->width * sizeof(uint32_t));
     SDL_RenderCopy(box->renderer, box->texture, NULL, &box->rect);
-    // SDL_RenderPresent(box->renderer);
 }
+
 
 void drawUIBox(UIBox* box, V3 mousePos, int mouseDown) {
     for (int curr = 0; curr < box->sldrCount; curr++) {
@@ -306,6 +326,7 @@ void updateFpsText(HudBox* box, TTF_Font* font, float fps) {
     SDL_FreeSurface(surface);
 }
 
+
 void updateObjs(Scene* scene, UIBox uiBox) {
     for (int i = 0; i < scene->objCount; i++) {
         Surface* obj = scene->objects[i];
@@ -371,7 +392,7 @@ int runWindow(int width, int height) {
         drawHudBox(&hudBox);
         drawSceneBox(&sceneBox, pool);
         drawUIBox(&uiBox, mousePos, mouseDown);
-        updateObjs(sceneBox.scene, uiBox);
+        //updateObjs(sceneBox.scene, uiBox);
         SDL_RenderPresent(renderer);
     }
 

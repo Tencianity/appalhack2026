@@ -11,6 +11,7 @@
 typedef struct Light Light;
 typedef struct Scene Scene;
 struct Scene {
+    V3 origin;
     int width;
     int height;
     uint32_t* buffer;
@@ -25,9 +26,17 @@ struct Scene {
 };
 
 
+static inline void addSurface(Scene* scene, Surface* surface) {
+    scene->objects[scene->objCount++] = surface;
+}
+
+static inline void addLight(Scene* scene, Light* light) {
+    scene->lights[scene->lightCount++] = light;
+}
+
 static inline void freeSurfaces(Scene* scene) {
     for (int i = 0; i < scene->objCount; i++) {
-        free(scene->objects[i]);
+        scene->objects[i]->destroy(scene->objects[i]);
     }
 }
 

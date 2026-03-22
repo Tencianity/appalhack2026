@@ -25,7 +25,7 @@ void transpose(Scene* scene, Surface* object, float speed) {
             mvSphere(scene, (Sphere*) object, speed);
             break;
         default:
-            printf("Could be anything... be on your toes.\n");
+            //printf("Could be anything... be on your toes.\n");
     }
 }
 
