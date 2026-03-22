@@ -57,54 +57,53 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
                 bounds = (Box*) scene->objects[i];
             }
         }
-
-        if (bounds == NULL) return;
         
-        // Front, back, left, right, top, bottom
-        // Assign each quad as a side of a cube
-        myCube cube = {
-            *bounds->faces[0],
-            *bounds->faces[1],
-            *bounds->faces[2],
-            *bounds->faces[3],
-            *bounds->faces[4],
-            *bounds->faces[5]
-        };
-        V3 boxMid = v3Sub(bounds->faces[0]->origin, bounds->faces[1]->origin);
-        
-        // Update collision surface normal based on scene boundaries
-        if (nextLoc.x - sphere->radius <= cube.faceLeft.origin.x) {
-            wallNorm = v3Add(wallNorm, (V3) {1.f, 0.f, 0.f});
-            doesCollision = TRUE;
-        }
-        else if (nextLoc.x + sphere->radius >= cube.faceRight.origin.x) {
-            wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
-            doesCollision = TRUE;
-        }
-        else if (nextLoc.y - sphere->radius <= cube.faceTop.origin.y) {
-            wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
-            doesCollision = TRUE;
-        }
-        else if (nextLoc.y + sphere->radius >= cube.faceBottom.origin.y) {
-            wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
-            doesCollision = TRUE;
-        }
-        else if (nextLoc.z - sphere->radius <= cube.faceFront.origin.z) {
-            wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, 1.f});
-            doesCollision = TRUE;
-        }
-        else if (nextLoc.z + sphere->radius >= cube.faceBack.origin.z) {
-            wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, -1.f});
-            doesCollision = TRUE;
-        }
-        else {
-            doesCollision = FALSE;
-        }
-        // Reflect off wall if a collision occurs this frame
-        if (doesCollision == TRUE) {
-            vel = v3Reflect(vel, wallNorm);
-        }
-        
+        if (bounds != NULL) {
+            // Front, back, left, right, top, bottom
+            // Assign each quad as a side of a cube
+            myCube cube = {
+                *bounds->faces[0],
+                *bounds->faces[1],
+                *bounds->faces[2],
+                *bounds->faces[3],
+                *bounds->faces[4],
+                *bounds->faces[5]
+            };
+            V3 boxMid = v3Sub(bounds->faces[0]->origin, bounds->faces[1]->origin);
+            
+            // Update collision surface normal based on scene boundaries
+            if (nextLoc.x - sphere->radius <= cube.faceLeft.origin.x) {
+                wallNorm = v3Add(wallNorm, (V3) {1.f, 0.f, 0.f});
+                doesCollision = TRUE;
+            }
+            else if (nextLoc.x + sphere->radius >= cube.faceRight.origin.x) {
+                wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
+                doesCollision = TRUE;
+            }
+            else if (nextLoc.y - sphere->radius <= cube.faceTop.origin.y) {
+                wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
+                doesCollision = TRUE;
+            }
+            else if (nextLoc.y + sphere->radius >= cube.faceBottom.origin.y) {
+                wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
+                doesCollision = TRUE;
+            }
+            else if (nextLoc.z - sphere->radius <= cube.faceFront.origin.z) {
+                wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, 1.f});
+                doesCollision = TRUE;
+            }
+            else if (nextLoc.z + sphere->radius >= cube.faceBack.origin.z) {
+                wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, -1.f});
+                doesCollision = TRUE;
+            }
+            else {
+                doesCollision = FALSE;
+            }
+            // Reflect off wall if a collision occurs this frame
+            if (doesCollision == TRUE) {
+                vel = v3Reflect(vel, wallNorm);
+            }
+        }           
         // Update surface velocity and increment location
         vel = v3Normalize(vel); // Normalize velocity
         sphere->base.velocity = vel;

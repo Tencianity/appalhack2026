@@ -257,83 +257,57 @@ void drawSceneBox(SceneBox* box, ThreadPool* pool) {
     SDL_RenderCopy(box->renderer, box->texture, NULL, &box->rect);
 }
 
-void draw_rectangle(SDL_Surface* surface, int x, int y, int width, int height)
-{
-    SDL_LockSurface(surface);
-    //Make each pixel black
-    RGBA* pixels = malloc(sizeof(uint32_t) * width * height);
-
-    for (int dy = y; dy < height; dy++) {
-        for (int dx = x; dx < width; dx++) {
-            // pixels[dx * sizeof(RGBA)];
-        }
-    }
-    // memcpy(surface->pixels, pixels.data(), surface->pitch * surface->h);
-    SDL_UnlockSurface(surface);
-    free(pixels);
-}
-
-
 void drawUIBox(UIBox* box, V3 mousePos, int mouseDown) {
-    // // Initialize a surface to draw to
-    // SDL_Surface *uiSurface = SDL_CreateSurface(170, 10, SDL_PIXELFORMAT_RGBA32);
-    // if (!surface) {
-    //     printf("SDL_CreateSurface Error: %s\n", SDL_GetError());
-    // }
+    for (int curr = 0; curr < box->sldrCount; curr++) {
+        Slider* sptr = box->sliders[curr];
+        updateSlider(box->renderer, sptr, mousePos, mouseDown, box->font);
+        Slider slider = *sptr;
 
-    // for (int curr = 0; curr < box->sldrCount; curr++) {
-    //     Slider* sptr = box->sliders[curr];
-    //     if (updateSlider(box->renderer, sptr, mousePos, mouseDown, box->font)) {
-    //         Slider slider = *sptr;
-    //         SDL_Color aqua = {0, 50, 255, 255};
-    //         SDL_Color gray = {50, 50, 50, 150};
-    //         SDL_Color color;
+        // Draw the border
+        // SDL_Color grayish = {50, 50, 50, 255};
+        SDL_SetRenderDrawColor(box->renderer, 50, 50, 50, 150);
+        SDL_RenderDrawRect(box->renderer, &(slider.border));
+        SDL_RenderFillRect(box->renderer, &(slider.border));
+        
+        // SDL_Color aqua = {0, 50, 255, 255};
+        SDL_SetRenderDrawColor(box->renderer, 0, 50, 255, 255);
+        
+        // Draw the draggable button
+        for (int col = 0; col < slider.border.w; col++) {
+            for (int row = 0; row < slider.border.h; row++) {
+                int leftBorder = slider.border.x;
+                int rightBorder = slider.border.x + slider.border.w;
 
-    //         // Draw the border
-    //         color = gray;
-    //         draw_rectangle(uiSurface, color, slider.border.x, slider.border.y, slider.width, slider.height)
-            
-    //         // SDL_Color aqua = {0, 50, 255, 255};
-    //         color = aqua
-            
-    //         // Draw the draggable button
-    //         for (int col = 0; col < slider.border.w; col++) {
-    //             for (int row = 0; row < slider.border.h; row++) {
-    //                 int leftBorder = slider.border.x;
-    //                 int rightBorder = slider.border.x + slider.border.w;
+                // Represents how far the current point is fron the center of the button
+                V3 v = {slider.border.x + col, slider.border.y + row, 0.f};
+                v = v3Sub(slider.btnWorldPos, v);
+                float dist = sqrt( square(v.x) + square(v.y) );
+                
+                // Draw button within a radius (circle)
+                if (dist < slider.btnRadius) {
+                    SDL_SetRenderDrawColor(box->renderer, 0, 50, 255, 255);
+                    SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
+                }
+                // Draw line that the button drags across
+                else if (slider.border.x + col > leftBorder + 10
+                        && slider.border.x + col < rightBorder - 10
+                        && row == slider.border.h / 2) {
+                    SDL_SetRenderDrawColor(box->renderer, 200, 100, 0, 255);
+                    SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
+                }
 
-    //                 // Represents how far the current point is fron the center of the button
-    //                 V3 v = {slider.border.x + col, slider.border.y + row, 0.f};
-    //                 v = v3Sub(slider.btnWorldPos, v);
-    //                 float dist = sqrt( square(v.x) + square(v.y) );
-                    
-    //                 // Draw button within a radius (circle)
-    //                 if (dist < slider.btnRadius) {
-    //                     SDL_SetRenderDrawColor(box->renderer, 0, 50, 255, 255);
-    //                     SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
-    //                 }
-    //                 // Draw line that the button drags across
-    //                 else if (slider.border.x + col > leftBorder + 10
-    //                         && slider.border.x + col < rightBorder - 10
-    //                         && row == slider.border.h / 2) {
-    //                     SDL_SetRenderDrawColor(box->renderer, 200, 100, 0, 255);
-    //                     SDL_RenderDrawPoint(box->renderer, slider.border.x + col, slider.border.y + row);
-    //                 }
+            }
+        }
+        // Draw the label of the slider
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surface = TTF_RenderText_Solid(box->font, slider.label, white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(box->renderer, surface);
+        SDL_Rect textRect = {slider.border.x - 5, slider.border.y - 5, 30, 20};
+        SDL_RenderCopy(box->renderer, texture, NULL, &textRect);
+        SDL_FreeSurface(surface);
+    }
 
-    //             }
-    //         }
-    //         // Draw the label of the slider
-    //         SDL_Color white = {255, 255, 255, 255};
-    //         SDL_Surface* surface = TTF_RenderText_Solid(box->font, slider.label, white);
-    //         SDL_Texture* texture = SDL_CreateTextureFromSurface(box->renderer, surface);
-    //         SDL_Rect textRect = {slider.border.x - 5, slider.border.y - 5, 30, 20};
-    //         SDL_RenderCopy(box->renderer, texture, NULL, &textRect);
-    //         SDL_FreeSurface(surface);
-    //     }
-    // }
-    // SDL_FreeSurface(uiSurface);
 }
-
 
 void updateFpsText(HudBox* box, TTF_Font* font, float fps) {
     if (box->texture) SDL_DestroyTexture(box->texture);
@@ -425,7 +399,6 @@ int runWindow(int width, int height) {
     free(sceneBox.scene->buffer);
     SDL_DestroyTexture(hudBox.texture);
     SDL_DestroyTexture(sceneBox.texture);
-    SDL_DestroyTexture(uiBox.texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     freeSurfaces(sceneBox.scene);
