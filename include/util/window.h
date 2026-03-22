@@ -24,7 +24,6 @@ typedef struct {
     Scene* scene;
 } SceneBox;
 
-
 int checkInit();
 
 TTF_Font* createFont();

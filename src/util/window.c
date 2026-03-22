@@ -177,7 +177,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
         0.25f, // radius
         sphereMat // material
     );
-    sphere->base.velocity = (V3) {1.f, 0.5f, 0.f};
+    sphere->base.velocity = (V3) {1.f, 0.5f, 0.4f};
     box.scene->objects[scene->objCount++] = (Surface*) sphere;
 
     return box;
