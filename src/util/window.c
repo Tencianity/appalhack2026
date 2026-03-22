@@ -189,7 +189,7 @@ UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
     box.font = TTF_OpenFont("assets/fonts/JetBrainsMono-Regular.ttf", 15);
 
     // Create the slider representing speed multiplier
-    Slider* speedSlider = createSlider(10, 250, 100, 50, "Speed");
+    Slider* speedSlider = createSlider(250, 10, 100, 50, "Speed");
     speedSlider->value = 5.f;
     box.sldrCount = 0;
     box.sliders[box.sldrCount++] = speedSlider;
@@ -230,12 +230,12 @@ void initSceneSurfaces(Scene* scene) {
 
     V3 boxColor = {0.41f, 0.12f, 0.92f};
     Mat boxMat = (Mat) {boxColor, 0, 0, 0, 0, 0};
-    Box* box = createBox(
-        (V3) {-1, 0, 5},
-        (V3) {1, 2, 3},
-        boxMat
-    );
-    addSurface(scene, (Surface*) box);
+    // Box* box = createBox(
+    //     (V3) {-1, 0, 5},
+    //     (V3) {1, 2, 3},
+    //     boxMat
+    // );
+    // addSurface(scene, (Surface*) box);
 }
 
 
