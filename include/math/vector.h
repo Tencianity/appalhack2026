@@ -1,6 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "math/random.h"
+
 #include <math.h>
 
 typedef struct {
@@ -100,6 +102,14 @@ static inline V3 v3Lerp(V3 u, V3 v, float t) {
 static inline V3 v3Project(V3 u, V3 v) {
     float d = v3Dot(u, v) / v3Dot(v, v);
     return v3Scale(v, d);
+}
+
+static inline V3 randomOffset(RNG* rng, float radius) {
+    return (V3) {
+        (rngFloat(rng) - 0.5f) * 2.0f * radius,
+        (rngFloat(rng) - 0.5f) * 2.0f * radius,
+        (rngFloat(rng) - 0.5f) * 2.0f * radius
+    };
 }
 
 

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 
-void renderScene(Scene* scene);
+void renderScene(Scene* scene, int frameSeed);
 
 Ray castRay(Camera* cam, float a, float b);
 
-RGBA colorRay(Ray ray, Scene* scene);
+RGBA colorRay(Ray ray, Scene* scene, RNG* rng);
 
 int hitScene(Scene* scene, Ray ray, float tMin, 
         float tMax, HitRec* rec);

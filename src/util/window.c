@@ -163,8 +163,8 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
 
     // Here temporarally
     PointLight* light = createPointLight(
-        (V3) {0.8f, 0.8f, 0.8f},
-        (V3) {2.0f, 2.0f, 2.0f}
+        (V3) {100.0f, 100.0f, 100.0f},
+        (V3) {3.0f, 2.0f, 3.0f}
     );
     box.scene->lights[scene->lightCount++] = (Light*) light;
 
@@ -193,8 +193,8 @@ void drawHudBox(HudBox* box) {
 }
 
 
-void drawSceneBox(SceneBox* box) {
-    renderScene(box->scene);
+void drawSceneBox(SceneBox* box, int frameSeed) {
+    renderScene(box->scene, frameSeed);
     SDL_UpdateTexture(box->texture, NULL, box->scene->buffer, 
             box->scene->width * sizeof(uint32_t));
     SDL_RenderCopy(box->renderer, box->texture, NULL, &box->rect);
@@ -239,6 +239,7 @@ int runWindow(int width, int height) {
    
     Uint32 lastTime = SDL_GetTicks();
     int running = 1;
+    int frameSeed = 0;
     int frameCount = 0;
     float fps = 0;
     int mouseDown = 0;
@@ -268,8 +269,9 @@ int runWindow(int width, int height) {
         }
 
         drawHudBox(&hudBox);
-        drawSceneBox(&sceneBox);
+        drawSceneBox(&sceneBox, frameSeed);
         drawUI(renderer, mouseDown, mousePos);
+        frameSeed++;
     }
 
     free(sceneBox.scene->buffer);

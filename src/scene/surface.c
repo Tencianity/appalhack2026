@@ -41,6 +41,7 @@ int hitSphere(Surface* self, Ray ray, float tMin,
 
     rec->t = root;
     rec->point = rayAt(ray, rec->t);
+    rec->normal = v3Normalize(v3Sub(rec->point, sphere->center));
     rec->mat = sphere->base.mat;
     return 1;
 }

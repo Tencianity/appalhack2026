@@ -43,7 +43,7 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
 
 void drawHudBox(HudBox* box);
 
-void drawSceneBox(SceneBox* box);
+void drawSceneBox(SceneBox* box, int frameSeed);
 
 void updateFpsText(HudBox* box, TTF_Font* font, float fps);
 

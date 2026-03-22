@@ -5,18 +5,23 @@
 #include "scene/hit.h"
 #include "scene/color.h"
 
+#include "math/random.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 
 
-void renderScene(Scene* scene) {
+void renderScene(Scene* scene, int frameSeed) {
     for (int i = 0; i < scene->height; i++) {
         for (int j = 0; j < scene->width; j++) {
             float u = (float)j / (scene->width - 1);
             float v = (float)i / (scene->height - 1);
            
             Ray ray = castRay(scene->cam, u, v);
-            RGBA rgba = colorRay(ray, scene);
+            uint32_t seed = (j * 1973) + (i * 9277) + frameSeed;
+            RNG rng;
+            initRNG(&rng, seed);
+            RGBA rgba = colorRay(ray, scene, &rng);
 
             uint32_t A = rgba.a << 24;
             uint32_t R = rgba.r << 16;
@@ -30,13 +35,13 @@ void renderScene(Scene* scene) {
 }
 
 
-RGBA colorRay(Ray ray, Scene* scene) {
+RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
     HitRec rec;
     if (hitScene(scene, ray, 0.001f, 1000.0f, &rec)) {
         V3 lightColor = {0, 0, 0};
         for (int i = 0; i < scene->lightCount; i++) {
             Light* light = scene->lights[i];
-            V3 contribution = light->illuminate(light, scene, &rec);
+            V3 contribution = light->illuminate(light, scene, &rec, rng);
             lightColor = v3Add(lightColor, contribution);
         }
 
@@ -64,12 +69,4 @@ int hitScene(Scene* scene, Ray ray, float tMin,
         }
     }
     return hasHit;
-}
-
-
-int hitShadow(Scene* scene, HitRec* rec, V3 dirNorm, float dirMag) {
-    V3 orig = v3Add(rec->point, v3Scale(dirNorm, 0.00001f));
-    Ray ray = (Ray){orig, dirNorm};
-    HitRec sRec;
-    return hitScene(scene, ray, 0.001f, dirMag, &sRec);
 }
