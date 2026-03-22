@@ -8,6 +8,10 @@
 #include "util/engine.h"
 #include "math/vector.h"
 
+/**
+ * May god have mercy on any soul whom wishes to parse this code.
+ */
+
 #define FALSE 0
 #define TRUE 1
 
@@ -25,7 +29,7 @@ void transpose(Scene* scene, Surface* object, float speed) {
             mvSphere(scene, (Sphere*) object, speed);
             break;
         default:
-            //printf("Could be anything... be on your toes.\n");
+            // printf("Could be anything... be on your toes.\n");
     }
 }
 
@@ -44,30 +48,52 @@ void mvSphere(Scene* scene, Sphere* sphere, float speed) {
         srand((unsigned int) time(NULL));
         float variance = (float) (rand() % 1000);
         float sign = (float) ((int) variance % 1); // -1.f or 1.f
-        variance *= sign / 10000.f;
+        variance *= sign / 1000.f;
+
+        // Find bounding box that contains spheres
+        Box* bounds;
+        for (int i = 0; i < sizeof(scene->objects) / sizeof(scene->objects[0]); i++) {
+            if (scene->objects[i]->type == BOX_TYPE) {
+                bounds = (Box*) scene->objects[i];
+            }
+        }
+
+        if (bounds == NULL) return;
+        
+        // Front, back, left, right, top, bottom
+        // Assign each quad as a side of a cube
+        myCube cube = {
+            *bounds->faces[0],
+            *bounds->faces[1],
+            *bounds->faces[2],
+            *bounds->faces[3],
+            *bounds->faces[4],
+            *bounds->faces[5]
+        };
+        V3 boxMid = v3Sub(bounds->faces[0]->origin, bounds->faces[1]->origin);
         
         // Update collision surface normal based on scene boundaries
-        if (nextLoc.x - sphere->radius < -1) {
+        if (nextLoc.x - sphere->radius <= cube.faceLeft.origin.x) {
             wallNorm = v3Add(wallNorm, (V3) {1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
-        else if (nextLoc.x + sphere->radius > 1) {
+        else if (nextLoc.x + sphere->radius >= cube.faceRight.origin.x) {
             wallNorm = v3Add(wallNorm, (V3) {-1.f, 0.f, 0.f});
             doesCollision = TRUE;
         }
-        else if (nextLoc.y - sphere->radius < -1) {
+        else if (nextLoc.y - sphere->radius <= cube.faceTop.origin.y) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, 1.f, 0.f});
             doesCollision = TRUE;
         }
-        else if (nextLoc.y + sphere->radius > 1) {
+        else if (nextLoc.y + sphere->radius >= cube.faceBottom.origin.y) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, -1.f, 0.f});
             doesCollision = TRUE;
         }
-        else if (nextLoc.z - sphere->radius < -2) {
+        else if (nextLoc.z - sphere->radius <= cube.faceFront.origin.z) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, 1.f});
             doesCollision = TRUE;
         }
-        else if (nextLoc.z + sphere->radius > -1) {
+        else if (nextLoc.z + sphere->radius >= cube.faceBack.origin.z) {
             wallNorm = v3Add(wallNorm, (V3) {0.f, 0.f, -1.f});
             doesCollision = TRUE;
         }
