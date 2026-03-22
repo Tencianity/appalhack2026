@@ -11,7 +11,7 @@ typedef struct {
 } Camera;
 
 
-Camera* createCamera(float aspect);
+Camera* createCameraLookAt(V3 origin, V3 target, V3 up, float aspect);
 
 
 #endif

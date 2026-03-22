@@ -13,7 +13,7 @@
 #include <stdatomic.h>
 #include <stdio.h>
 
-#define AA_SAMPLES 4
+#define AA_SAMPLES 8
 
 
 void initTiles(Scene* scene) {
@@ -95,23 +95,41 @@ void renderScene(Scene* scene, ThreadPool* pool) {
 RGBA colorRay(Ray ray, Scene* scene, RNG* rng) {
     HitRec rec;
     if (hitScene(scene, ray, 0.001f, 1000.0f, &rec)) {
-        V3 lightColor = {0, 0, 0};
+        V3 baseColor = rec.mat.color;
+        if (rec.mat.isGround) {
+            V3 p = rec.point;
+            float gridSize = 0.25f;
+            int x = (int) floorf(p.x / gridSize);
+            int z = (int) floorf(p.z / gridSize);
+            int checker = (x + z) & 1;
+            V3 c1 = {0.4f, 0.4f, 0.8f};
+            V3 c2 = {0.2f, 0.2f, 0.8f};
+            V3 gridColor = checker ? c1 : c2;
+            float lineWidth = 0.05f;
+            float fx = fabsf(p.x / gridSize - roundf(p.x / gridSize));
+            float fz = fabsf(p.z / gridSize - roundf(p.z / gridSize));
+
+            if (fx < lineWidth || fz < lineWidth) {
+                gridColor = (V3) {0.0f, 0.0f, 0.0f};
+            }
+            baseColor = gridColor;
+        }
+        V3 color = {0, 0, 0};
         for (int i = 0; i < scene->lightCount; i++) {
             Light* light = scene->lights[i];
-            V3 contribution = light->illuminate(light, scene, &rec, rng);
-            lightColor = v3Add(lightColor, contribution);
+            V3 lightColor = light->illuminate(light, scene, &rec, rng);
+            color = v3Add(color, v3Mult(baseColor, lightColor));
         }
 
-        V3 color = v3Mult(rec.mat.color, lightColor);
         color = v3Clamp(color, 0.0f, 1.0f);
         color.x = sqrtf(color.x);
         color.y = sqrtf(color.y);
         color.z = sqrtf(color.z);
-        
         color = v3Scale(color, 255.0f);
         return (RGBA) {color.x, color.y, color.z, 255};
     }
-    return (RGBA) {180, 180, 255, 255}; // Should be light blue if not hit
+
+    return (RGBA){180, 180, 255, 255};
 }
 
 

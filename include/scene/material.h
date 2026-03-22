@@ -5,6 +5,7 @@
 
 typedef struct {
     V3 color;
+    int isGround;
     float density;
     float elasticity;
     float ref_index;

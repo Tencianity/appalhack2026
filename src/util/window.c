@@ -142,7 +142,11 @@ SceneBox initSceneBox(SDL_Window* window, SDL_Renderer* renderer,
     scene->width = sWidth;
     scene->height = sHeight;
     scene->buffer = malloc(sizeof(uint32_t) * sWidth * sHeight);
-    scene->cam = createCamera((float) sWidth / sHeight);
+    V3 origin = {2, 1, 1};
+    V3 target = {2, 1, -1};
+    V3 up     = {0, 1, 0};
+    float aspect = (float) sWidth / sHeight;
+    scene->cam = createCameraLookAt(origin, target, up, aspect);
     scene->objCount = 0;
     scene->lightCount = 0;
 
@@ -199,7 +203,7 @@ UIBox initUIBox(SDL_Window* window, SDL_Renderer* renderer,
 void initSceneLights(Scene* scene) {
     PointLight* pLight = createPointLight(
         (V3) {30.0f, 30.0f, 30.0f},
-        (V3) {3.0f, 2.0f, 3.0f}
+        (V3) {0, 2, 3}
     );
     addLight(scene, (Light*) pLight);
 
@@ -212,28 +216,28 @@ void initSceneLights(Scene* scene) {
 
 void initSceneSurfaces(Scene* scene) {
     V3 groundColor = (V3) {0.75f, 0.75f, 0.75f};
-    Mat groundMat = (Mat) {groundColor, 0, 0, 0, 0};
+    Mat groundMat = (Mat) {groundColor, 1, 0, 0, 0, 0};
     Plane* ground = createPlane(0.0f, groundMat);
     addSurface(scene, (Surface*) ground);
 
     V3 sphereColor = (V3) {0.71f, 0.12f, 0.92f};
-    Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0};
+    Mat sphereMat = (Mat) {sphereColor, 0, 0, 0, 0, 0};
     Sphere* sphere = createSphere(
-        (V3) {0, 1, -1},
+        (V3) {0, 1, 2},
         0.25f,
         sphereMat
     );
     sphere->base.velocity = (V3) {1.f, 0.5f, 0.4f};
     addSurface(scene, (Surface*) sphere);
 
-    V3 cubeColor = {0.41f, 0.12f, 0.92f};
-    Mat cubeMat = (Mat) {cubeColor, 0, 0, 0, 0};
-    Cube* cube = createCube(
-        (V3) {-1, -1, -3},
-        (V3) {1, 1, -3},
-        cubeMat
+    V3 boxColor = {0.41f, 0.12f, 0.92f};
+    Mat boxMat = (Mat) {boxColor, 0, 0, 0, 0, 0};
+    Box* box = createBox(
+        (V3) {-1, 0, 5},
+        (V3) {1, 2, 3},
+        boxMat
     );
-    addSurface(scene, (Surface*) cube);
+    addSurface(scene, (Surface*) box);
 }
 
 

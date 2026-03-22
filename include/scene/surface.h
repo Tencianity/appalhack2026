@@ -11,6 +11,11 @@
 #define QUAD_TYPE 3
 #define BOX_TYPE 4
 
+typedef struct {
+    V3 min;
+    V3 max;
+} AABB;
+
 typedef struct Surface Surface;
 struct Surface {
     int type;

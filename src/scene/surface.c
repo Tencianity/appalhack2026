@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 Sphere* createSphere(V3 center, float radius, Mat mat) {
