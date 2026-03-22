@@ -14,11 +14,14 @@ typedef struct {
     V3 btnWorldPos;
     // Radius of the button
     int btnRadius;
+    // Text identifying the slider
+    char* label;
 } Slider;
 
-Slider createSlider(int x, int y, int width, int height);
+Slider createSlider(int x, int y, int width, int height, char* label);
 void drawSlider(SDL_Renderer* renderer, Slider slider);
 void updateSlider(SDL_Renderer* renderer, Slider* slider, V3 mousePos, int mouseDown);
+void initUI();
 void drawUI(SDL_Renderer* renderer, int mouseDown, V3 mousePos);
 
 #endif
