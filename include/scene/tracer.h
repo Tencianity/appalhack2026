@@ -6,19 +6,24 @@
 #include "scene/ray.h"
 #include "scene/color.h"
 
+#include "util/thread.h"
+
 #include <stdint.h>
 
-typedef struct {
+#define TILE_SIZE 16
+
+typedef struct TileJob {
     Scene* scene;
-    int startRow;
-    int endRow;
-    int frameSeed;
-} RenderTask;
+    int startX, startY, endX, endY;
+    uint32_t frameSeed;
+} TileJob;
 
 
-void* renderThread(void* arg);
+void initTiles(Scene* scene);
 
-void renderScene(Scene* scene, int frameSeed);
+void renderTileJob(void* arg);
+
+void renderScene(Scene* scene, ThreadPool* pool);
 
 Ray castRay(Camera* cam, float a, float b);
 

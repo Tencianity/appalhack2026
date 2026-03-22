@@ -6,6 +6,7 @@
 #include "scene/light.h"
 
 #include <stdlib.h>
+#include <stdatomic.h>
 
 typedef struct Light Light;
 typedef struct Scene Scene;
@@ -18,6 +19,9 @@ struct Scene {
     Light* lights[32];
     int lightCount;
     Camera* cam;
+    int tilesX;
+    int tilesY;
+    int frameSeed;
 };
 
 
